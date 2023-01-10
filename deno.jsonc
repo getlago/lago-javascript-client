@@ -1,0 +1,8 @@
+{
+	"tasks": {
+		"build": "deno task generate:swagger && deno task test && deno task generate:npm-package",
+		"generate:npm-package": "deno run -A scripts/build_npm.ts",
+		"generate:swagger": "npx -y swagger-typescript-api -p https://swagger.getlago.com/swagger.yaml -o ./src/swagger -n client.ts",
+		"test": "deno test src/test --parallel"
+	}
+}
