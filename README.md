@@ -3,7 +3,7 @@
 This is a JavaScript wrapper for Lago API. Works in Cloudflare Workers, Deno, and Node.js. Generated from [the Lago Swagger document](https://swagger.getlago.com/#/).
 
 [![PyPI version](https://badge.fury.io/js/lago-javascript-client.svg)](https://badge.fury.io/js/lago-javascript-client)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://spdx.org/licenses/MIT.html)
 
 ## Installation
 
