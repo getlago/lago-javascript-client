@@ -1,4 +1,4 @@
-import type { Invoice, Invoices } from "../main.ts";
+import type { Invoice, Invoices } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const invoiceResponse = {

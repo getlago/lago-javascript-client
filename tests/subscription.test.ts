@@ -2,7 +2,7 @@ import type {
   Subscription,
   SubscriptionCreateInput,
   Subscriptions,
-} from "../main.ts";
+} from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const subscriptionInput = {

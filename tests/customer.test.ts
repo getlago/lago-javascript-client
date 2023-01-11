@@ -1,4 +1,4 @@
-import type { Customer, CustomerInput, CustomerUsage } from "../main.ts";
+import type { Customer, CustomerInput, CustomerUsage } from "../mod.ts";
 import {
   lagoTest,
   notFoundErrorResponse,

@@ -2,7 +2,7 @@ import type {
   CreditNote,
   CreditNoteInput,
   CreditNoteUpdateInput,
-} from "../main.ts";
+} from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const creditNote = {

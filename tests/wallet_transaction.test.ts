@@ -1,4 +1,4 @@
-import type { WalletTransaction, WalletTransactionInput } from "../main.ts";
+import type { WalletTransaction, WalletTransactionInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const walletTransactionInput = {

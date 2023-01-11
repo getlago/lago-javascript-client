@@ -1,4 +1,4 @@
-import type { Plan, PlanInput, Plans } from "../main.ts";
+import type { Plan, PlanInput, Plans } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const planInput = {
