@@ -41,7 +41,7 @@ await build({
       "Client",
     ],
     author: "Lovro Colic",
-    license: "AGPL-3.0",
+    license: "MIT",
     bugs: {
       "url": "https://github.com/getlago/lago-javascript-client/issues",
     },
