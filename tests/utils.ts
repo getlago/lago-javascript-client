@@ -1,14 +1,14 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import { assertEquals } from "https://deno.land/std@0.170.0/testing/asserts.ts";
 import * as mf from "https://deno.land/x/mock_fetch@0.3.0/mod.ts";
-import { Client, getLagoError } from "../main.ts";
+import { Client, getLagoError } from "../mod.ts";
 import type {
   Api,
   ApiResponseNotFound,
   ApiResponseUnauthorized,
   ApiResponseUnprocessableEntity,
   HttpResponse,
-} from "../main.ts";
+} from "../mod.ts";
 
 type ExtractLagoDataOrError<E> = E extends (
   ...args: any

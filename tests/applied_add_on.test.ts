@@ -1,4 +1,4 @@
-import type { AppliedAddOnInput } from "../main.ts";
+import type { AppliedAddOnInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const appliedAddOn = {

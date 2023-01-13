@@ -1,4 +1,4 @@
-import type { BillableMetric, BillableMetricInput } from "../main.ts";
+import type { BillableMetric, BillableMetricInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const billableMetric = {

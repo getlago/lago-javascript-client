@@ -1,4 +1,4 @@
-import type { AppliedCouponInput, AppliedCoupons } from "../main.ts";
+import type { AppliedCouponInput, AppliedCoupons } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const appliedCoupon = {

@@ -1,4 +1,4 @@
-import type { Groups } from "../main.ts";
+import type { Groups } from "../mod.ts";
 import { lagoTest } from "./utils.ts";
 
 const groupResponse = {

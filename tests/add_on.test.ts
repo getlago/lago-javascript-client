@@ -1,4 +1,4 @@
-import type { AddOn, AddOnInput } from "../main.ts";
+import type { AddOn, AddOnInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const addOn = {

@@ -1,4 +1,4 @@
-import type { BatchEventInput, EventInput } from "../main.ts";
+import type { BatchEventInput, EventInput } from "../mod.ts";
 import {
   lagoTest,
   notFoundErrorResponse,

@@ -1,4 +1,4 @@
-import type { Organization, OrganizationInput } from "../main.ts";
+import type { Organization, OrganizationInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const orgInput = {

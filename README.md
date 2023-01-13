@@ -7,14 +7,18 @@ This is a JavaScript wrapper for Lago API. Works in Cloudflare Workers, Deno, an
 
 ## Installation
 
-Install the `lago-javascript-client` via npm:
+For npm users:
 
 ```bash
 npm install lago-javascript-client
 ```
 
 ```typescript
+// npm
 import { Client, getLagoError } from 'lago-javascript-client';
+
+// Deno
+import { Client, getLagoError } from 'https://deno.land/x/lago/mod.ts';
 
 const lagoClient = Client('__YOUR_API_KEY__');
 
@@ -48,7 +52,7 @@ This SDK uses the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/F
 
 Check the [Lago API reference](https://doc.getlago.com/docs/api/intro)
 
-### Error Handling
+### Error handling
 
 Use the get `getLagoError<>()` utility function to extract the error object and TypeScript type:
 
@@ -64,9 +68,19 @@ try {
 
 Uses [dnt](https://github.com/denoland/dnt) to build and test for Deno and Node.
 
+### Release new version
+
+Change the affected fields in `scripts/build_npm.ts` and commit to GitHub. GitHub Actions will build and deploy to npm.
+
 ### Dependencies
 
 Requires [Deno](https://deno.land/) and [Node.js >= 18](https://nodejs.org/en/)
+
+### Generate client from Swagger
+
+```bash
+deno task generate:swagger
+```
 
 ### Run tests
 
@@ -80,7 +94,7 @@ deno task test
 deno task build
 ```
 
-### Publish to NPM
+### Publish to npm
 
 ```bash
 deno task build

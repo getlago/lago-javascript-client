@@ -3,7 +3,7 @@ import { build, emptyDir } from "https://deno.land/x/dnt@0.32.0/mod.ts";
 await emptyDir("./npm");
 
 await build({
-  entryPoints: ["./src/main.ts"],
+  entryPoints: ["./mod.ts"],
   outDir: "./npm",
   typeCheck: false,
   shims: {
@@ -11,7 +11,10 @@ await build({
     deno: "dev",
     custom: [
       {
-        module: "https://cdn.skypack.dev/urlpattern-polyfill",
+        package: {
+          name: "urlpattern-polyfill",
+          version: "^6.0.2",
+        },
         globalNames: [
           {
             name: "URLPattern",
@@ -40,7 +43,7 @@ await build({
       "API",
       "Client",
     ],
-    author: "Lovro Colic",
+    contributors: ["Lovro Colic", "Jérémy Denquin", "Arjun Yelamanchili"],
     license: "MIT",
     bugs: {
       "url": "https://github.com/getlago/lago-javascript-client/issues",
