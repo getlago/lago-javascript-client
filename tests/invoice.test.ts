@@ -8,6 +8,7 @@ const invoiceResponse = {
     "number": "222345",
     "issuing_date": "2022-09-14T16:35:31Z",
     "invoice_type": "subscription",
+    "status": "finalized",
     "payment_status": "pending",
     "amount_cents": 1200,
     "amount_currency": "EUR",
@@ -193,6 +194,36 @@ Deno.test(
       responseObject: invoicesResponse,
       status: 200,
       urlParams: { per_page: "2", page: "3" },
+    });
+  },
+);
+
+Deno.test(
+  "Successfully request invoice refresh responds with 2xx",
+  async (t) => {
+    await lagoTest({
+      t,
+      testType: "200",
+      route: "PUT@/api/v1/invoices/lagoId/refresh",
+      clientPath: ["invoices", "refreshInvoice"],
+      inputParams: ["lagoId"],
+      responseObject: invoiceResponse,
+      status: 200,
+    });
+  },
+);
+
+Deno.test(
+  "Successfully request invoice finalize responds with 2xx",
+  async (t) => {
+    await lagoTest({
+      t,
+      testType: "200",
+      route: "PUT@/api/v1/invoices/lagoId/finalize",
+      clientPath: ["invoices", "finalizeInvoice"],
+      inputParams: ["lagoId"],
+      responseObject: invoiceResponse,
+      status: 200,
     });
   },
 );
