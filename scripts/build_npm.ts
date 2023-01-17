@@ -31,6 +31,7 @@ await build({
   package: {
     // package.json properties
     name: "lago-javascript-client",
+    sideEffects: false,
     version: "v0.19.4-alpha",
     description: "Lago JavaScript API Client",
     repository: {
