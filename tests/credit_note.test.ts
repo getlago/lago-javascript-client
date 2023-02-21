@@ -63,7 +63,7 @@ const response = {
       "address_line1": "address1",
       "address_line2": "address2",
       "state": "state1",
-      "zipode": "10000",
+      "zipcode": "10000",
       "email": "example@example.com",
       "city": "City",
       "url": "https://example.com",
