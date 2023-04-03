@@ -99,7 +99,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/add_ons/",
+      route: "GET@/api/v1/add_ons",
       clientPath: ["addOns", "findAllAddOns"],
       inputParams: [],
       responseObject: { add_ons: [addOn.add_on] },
@@ -114,7 +114,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/add_ons/",
+      route: "GET@/api/v1/add_ons",
       clientPath: ["addOns", "findAllAddOns"],
       inputParams: [{ page: 3, per_page: 2 }],
       responseObject: { add_ons: [addOn.add_on] },

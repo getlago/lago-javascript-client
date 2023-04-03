@@ -126,7 +126,7 @@ Deno.test("Successfully sent plan find all request responds with 2xx", async (t)
   await lagoTest({
     t,
     testType: "200",
-    route: "GET@/api/v1/plans/",
+    route: "GET@/api/v1/plans",
     clientPath: ["plans", "findAllPlans"],
     inputParams: [],
     responseObject: plansResponse,
@@ -140,7 +140,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/plans/",
+      route: "GET@/api/v1/plans",
       clientPath: ["plans", "findAllPlans"],
       inputParams: [{ per_page: 2, page: 3 }],
       responseObject: plansResponse,

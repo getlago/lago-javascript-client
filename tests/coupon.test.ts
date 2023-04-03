@@ -95,7 +95,7 @@ Deno.test("Successfully sent coupon find all request responds with 2xx", async (
   await lagoTest({
     t,
     testType: "200",
-    route: "GET@/api/v1/coupons/",
+    route: "GET@/api/v1/coupons",
     clientPath: ["coupons", "findAllCoupons"],
     inputParams: [],
     responseObject: { coupons: [response.coupon] },
@@ -109,7 +109,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/coupons/",
+      route: "GET@/api/v1/coupons",
       clientPath: ["coupons", "findAllCoupons"],
       inputParams: [{ page: 3, per_page: 2 }],
       responseObject: { coupons: [response.coupon] },

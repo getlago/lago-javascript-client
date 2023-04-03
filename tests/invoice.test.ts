@@ -173,7 +173,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/invoices/",
+      route: "GET@/api/v1/invoices",
       clientPath: ["invoices", "findAllInvoices"],
       inputParams: [],
       responseObject: invoicesResponse,
@@ -188,7 +188,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/invoices/",
+      route: "GET@/api/v1/invoices",
       clientPath: ["invoices", "findAllInvoices"],
       inputParams: [{ per_page: 2, page: 3 }],
       responseObject: invoicesResponse,

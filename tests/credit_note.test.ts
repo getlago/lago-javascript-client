@@ -172,7 +172,7 @@ Deno.test("Successfully sent find all credit notes request", async (t) => {
   await lagoTest({
     t,
     testType: "200",
-    route: "GET@/api/v1/credit_notes/",
+    route: "GET@/api/v1/credit_notes",
     clientPath: ["creditNotes", "findAllCreditNotes"],
     inputParams: [],
     responseObject: { credit_notes: [creditNote.credit_note] },
@@ -198,7 +198,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/credit_notes/",
+      route: "GET@/api/v1/credit_notes",
       clientPath: ["creditNotes", "findAllCreditNotes"],
       inputParams: [{
         per_page: 2,

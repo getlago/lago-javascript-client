@@ -101,7 +101,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/subscriptions/",
+      route: "GET@/api/v1/subscriptions",
       clientPath: ["subscriptions", "findAllSubscriptions"],
       inputParams: [{ external_customer_id: "2" }],
       responseObject: subscriptionsResponse,

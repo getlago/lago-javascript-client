@@ -52,7 +52,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "PUT@/api/v1/organizations/",
+      route: "PUT@/api/v1/organizations",
       clientPath: ["organizations", "updateOrganization"],
       inputParams: [orgInput],
       responseObject: orgResponse,
@@ -65,7 +65,7 @@ Deno.test("Status code is not 2xx", async (t) => {
   await lagoTest({
     t,
     testType: "error",
-    route: "PUT@/api/v1/organizations/",
+    route: "PUT@/api/v1/organizations",
     clientPath: ["organizations", "updateOrganization"],
     inputParams: [orgInput],
     responseObject: unprocessableErrorResponse,
