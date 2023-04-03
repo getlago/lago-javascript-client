@@ -113,7 +113,7 @@ Deno.test("Successfully sent wallet find all request responds with 2xx", async (
   await lagoTest({
     t,
     testType: "200",
-    route: "GET@/api/v1/wallets/",
+    route: "GET@/api/v1/wallets",
     clientPath: ["wallets", "findAllWallets"],
     inputParams: [{ external_customer_id: "external-123" }],
     responseObject: walletsResponse,
@@ -128,7 +128,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/wallets/",
+      route: "GET@/api/v1/wallets",
       clientPath: ["wallets", "findAllWallets"],
       inputParams: [{
         external_customer_id: "external-123",

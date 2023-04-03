@@ -54,7 +54,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/applied_coupons/",
+      route: "GET@/api/v1/applied_coupons",
       clientPath: ["appliedCoupons", "findAllAppliedCoupons"],
       inputParams: [],
       responseObject: {
@@ -71,7 +71,7 @@ Deno.test(
     await lagoTest({
       t,
       testType: "200",
-      route: "GET@/api/v1/applied_coupons/",
+      route: "GET@/api/v1/applied_coupons",
       clientPath: ["appliedCoupons", "findAllAppliedCoupons"],
       inputParams: [{
         per_page: 2,
