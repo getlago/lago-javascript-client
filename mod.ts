@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Api, ApiConfig, HttpResponse } from "./swagger/client.ts";
+import { Api, ApiConfig, HttpResponse } from "./openapi/client.ts";
 
 export const Client = (apiKey: string, apiConfig?: ApiConfig) => {
   const api = new Api({
@@ -42,4 +42,4 @@ export async function getLagoError<T>(error: any) {
   throw new Error(error);
 }
 
-export * from "./swagger/client.ts";
+export * from "./openapi/client.ts";
