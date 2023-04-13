@@ -1,6 +1,6 @@
 # Lago JavaScript Client
 
-This is a JavaScript wrapper for Lago API. Works in Cloudflare Workers, Deno, and Node.js. Generated from [the Lago Swagger document](https://swagger.getlago.com/#/).
+This is a JavaScript wrapper for Lago API. Works in Cloudflare Workers, Deno, and Node.js. Generated from [the Lago OpenAPI document](https://swagger.getlago.com/#/).
 
 [![PyPI version](https://badge.fury.io/js/lago-javascript-client.svg)](https://badge.fury.io/js/lago-javascript-client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://spdx.org/licenses/MIT.html)
@@ -76,10 +76,10 @@ Change the affected fields in `scripts/build_npm.ts` and commit to GitHub. GitHu
 
 Requires [Deno](https://deno.land/) and [Node.js >= 18](https://nodejs.org/en/)
 
-### Generate client from Swagger
+### Generate client from OpenAPI
 
 ```bash
-deno task generate:swagger
+deno task generate:openapi
 ```
 
 ### Run tests

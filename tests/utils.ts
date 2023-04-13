@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any ban-types
-import { assertEquals } from "https://deno.land/std@0.180.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.183.0/testing/asserts.ts";
 import * as mf from "https://deno.land/x/mock_fetch@0.3.0/mod.ts";
 import { Client, getLagoError } from "../mod.ts";
 import type {

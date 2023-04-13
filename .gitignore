@@ -101,4 +101,4 @@ web_modules/
 *.iml
 
 npm/
-swagger/
+openapi/
