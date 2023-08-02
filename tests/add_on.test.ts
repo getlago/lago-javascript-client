@@ -1,4 +1,4 @@
-import type { AddOn, AddOnInput } from "../mod.ts";
+import type { AddOn, AddOnCreateInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const addOn = {
@@ -8,7 +8,7 @@ const addOn = {
     amount_cents: 10000,
     amount_currency: "USD",
   },
-} as const satisfies AddOnInput;
+} as const satisfies AddOnCreateInput;
 
 const addOnResponse = {
   add_on: {
