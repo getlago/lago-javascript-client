@@ -1,4 +1,4 @@
-import { build, emptyDir } from "https://deno.land/x/dnt@0.34.0/mod.ts";
+import { build, emptyDir } from "../deps.ts";
 
 await emptyDir("./npm");
 
@@ -13,7 +13,7 @@ await build({
       {
         package: {
           name: "urlpattern-polyfill",
-          version: "^6.0.2",
+          version: "^9.0.0",
         },
         globalNames: [
           {
@@ -26,7 +26,7 @@ await build({
   },
   compilerOptions: {
     target: "Latest",
-    lib: ["dom", "es2022"],
+    lib: ["DOM", "ES2022"],
   },
   package: {
     // package.json properties

@@ -1,4 +1,4 @@
-import type { Coupon, CouponInput } from "../mod.ts";
+import type { Coupon, CouponCreateInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const coupon = {
@@ -9,7 +9,7 @@ const coupon = {
     amount_cents: 10000,
     amount_currency: "USD",
   },
-} as const satisfies CouponInput;
+} as const satisfies CouponCreateInput;
 
 const response = {
   coupon: {

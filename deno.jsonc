@@ -2,7 +2,7 @@
 	"tasks": {
 		"build": "deno task generate:openapi && deno task generate:npm-package",
 		"generate:npm-package": "deno run -A scripts/build_npm.ts",
-		"generate:openapi": "npx -y swagger-typescript-api@latest -p https://swagger.getlago.com/openapi.yaml -o ./openapi -n client.ts",
+		"generate:openapi": "npx -y swagger-typescript-api@13.0.2 -p https://swagger.getlago.com/openapi.yaml --union-enums -o ./openapi -n client.ts",
 		"test": "deno test ./tests --parallel"
 	}
 }

@@ -1,12 +1,12 @@
 // deno-lint-ignore-file no-explicit-any ban-types
-import { assertEquals } from "https://deno.land/std@0.183.0/testing/asserts.ts";
-import * as mf from "https://deno.land/x/mock_fetch@0.3.0/mod.ts";
+import { assertEquals } from "../dev_deps.ts";
+import { mf } from "../dev_deps.ts";
 import { Client, getLagoError } from "../mod.ts";
 import type {
   Api,
-  ApiResponseNotFound,
-  ApiResponseUnauthorized,
-  ApiResponseUnprocessableEntity,
+  ApiErrorNotFound,
+  ApiErrorUnauthorized,
+  ApiErrorUnprocessableEntity,
   HttpResponse,
 } from "../mod.ts";
 
@@ -93,7 +93,7 @@ export async function lagoTest<
             error,
           );
           assertEquals(
-            (lagoError as ApiResponseUnprocessableEntity).error,
+            (lagoError as ApiErrorUnprocessableEntity).error,
             errorMessage,
           );
         }
@@ -121,15 +121,15 @@ export const unprocessableErrorResponse = {
   error: errorMessage,
   code: "validation_errors",
   error_details: {},
-} as const satisfies ApiResponseUnprocessableEntity;
+} as const satisfies ApiErrorUnprocessableEntity;
 
 export const notFoundErrorResponse = {
   status: 404,
   error: errorMessage,
   code: "object_not_found",
-} as const satisfies ApiResponseNotFound;
+} as const satisfies ApiErrorNotFound;
 
 export const unauthorizedErrorResponse = {
   status: 401,
   error: errorMessage,
-} as const satisfies ApiResponseUnauthorized;
+} as const satisfies ApiErrorUnauthorized;
