@@ -32,18 +32,13 @@ await build({
     // package.json properties
     name: "lago-javascript-client",
     sideEffects: false,
-    version: "v1.7.0",
+    version: "v1.9.0",
     description: "Lago JavaScript API Client",
     repository: {
-      "type": "git",
-      "url": "git+https://github.com/getlago/lago-javascript-client.git",
+      type: "git",
+      url: "git+https://github.com/getlago/lago-javascript-client.git",
     },
-    keywords: [
-      "Lago",
-      "Node",
-      "API",
-      "Client",
-    ],
+    keywords: ["Lago", "Node", "API", "Client"],
     contributors: [
       "Lovro Colic",
       "Jérémy Denquin",
@@ -53,7 +48,7 @@ await build({
     ],
     license: "MIT",
     bugs: {
-      "url": "https://github.com/getlago/lago-javascript-client/issues",
+      url: "https://github.com/getlago/lago-javascript-client/issues",
     },
     homepage: "https://github.com/getlago/lago-javascript-client#readme",
   },
