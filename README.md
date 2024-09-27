@@ -5,6 +5,13 @@ This is a JavaScript wrapper for Lago API. Works in Cloudflare Workers, Deno, an
 [![PyPI version](https://badge.fury.io/js/lago-javascript-client.svg)](https://badge.fury.io/js/lago-javascript-client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://spdx.org/licenses/MIT.html)
 
+## Current Releases
+
+| Project            | Release Badge                                                                                       |
+|--------------------|-----------------------------------------------------------------------------------------------------|
+| **Lago**           | [![Lago Release](https://img.shields.io/github/v/release/getlago/lago)](https://github.com/getlago/lago/releases) |
+| **Lago JavaScript Client**     | [![Lago JavaScript Client Release](https://img.shields.io/github/v/release/getlago/lago-javascript-client)](https://github.com/getlago/lago-javascript-client/releases) |
+
 ## Installation
 
 For npm users:
