@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "../dev_deps.ts";
+import { assertEquals } from "../dev_deps.ts";
 import { mf } from "../dev_deps.ts";
 import {
   Client,
@@ -216,7 +216,8 @@ Deno.test("Client with rateLimitRetry config uses rate limit fetch", async () =>
     },
   });
 
-  assertExists(client);
+  // Verify client was created
+  assertEquals(typeof client, "object");
   assertEquals(callCount, 0); // Not called yet
 });
 
