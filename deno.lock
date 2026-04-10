@@ -1,5 +1,10 @@
 {
-  "version": "2",
+  "version": "5",
+  "redirects": {
+    "https://crux.land/api/get/2KNRVU": "https://crux.land/api/get/2KNRVU.ts",
+    "https://crux.land/api/get/router@0.0.5": "https://crux.land/api/get/2KNRVU",
+    "https://crux.land/router@0.0.5": "https://crux.land/api/get/router@0.0.5"
+  },
   "remote": {
     "https://crux.land/api/get/2KNRVU.ts": "6a77d55844aba78d01520c5ff0b2f0af7f24cc1716a0de8b3bb6bd918c47b5ba",
     "https://deno.land/std@0.140.0/_util/assert.ts": "e94f2eb37cebd7f199952e242c77654e43333c1ac4c5c700e929ea3aa5489f74",
