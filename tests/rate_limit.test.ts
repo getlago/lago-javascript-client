@@ -166,6 +166,40 @@ Deno.test("createRateLimitFetch respects maxRetries", async () => {
   }
 });
 
+Deno.test("createRateLimitFetch uses exponential backoff when reset header missing", async () => {
+  let callCount = 0;
+
+  const mockFetch = createMockFetch(() => {
+    callCount++;
+    if (callCount === 1) {
+      // 429 without reset header
+      return new Response("Rate limited", {
+        status: 429,
+        headers: {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "0",
+        },
+      });
+    }
+    return new Response('{"success": true}', { status: 200 });
+  });
+
+  const rateLimitFetch = createRateLimitFetch(mockFetch, {
+    retryOnRateLimit: true,
+    maxRetries: 3,
+  });
+
+  const startTime = Date.now();
+  const response = await rateLimitFetch("https://example.com/api");
+  const elapsed = Date.now() - startTime;
+
+  assertEquals(response.status, 200);
+  assertEquals(callCount, 2);
+  // Exponential backoff attempt 0: 1000ms * 2^0 = 1000ms + jitter
+  assertEquals(elapsed >= 1000, true);
+  assertEquals(elapsed < 1500, true); // Should not be as long as the old 60s default
+});
+
 Deno.test("createRateLimitFetch passes through non-429 errors", async () => {
   const mockFetch = createMockFetch(() => {
     return new Response("Server error", {

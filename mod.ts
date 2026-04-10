@@ -65,10 +65,6 @@ export async function getLagoError<T>(error: any) {
 // Rate limit exports
 export { LagoRateLimitError } from "./rate_limit_error.ts";
 export { parseRateLimitHeaders, type RateLimitHeaders } from "./rate_limit_headers.ts";
-export {
-  RateLimitRetryHandler,
-  type RateLimitRetryConfig,
-} from "./rate_limit_retry.ts";
 export { createRateLimitFetch, type RateLimitFetchConfig } from "./rate_limit_fetch.ts";
 
 export * from "./openapi/client.ts";

@@ -40,7 +40,7 @@ export function createRateLimitFetch(
           const headers = parseRateLimitHeaders(response.headers);
           const limit = headers.limit ?? -1;
           const remaining = headers.remaining ?? 0;
-          const reset = headers.reset ?? 60;
+          const reset = headers.reset ?? -1;
 
           const error = new LagoRateLimitError(limit, remaining, reset);
 
@@ -84,8 +84,15 @@ export function createRateLimitFetch(
  * Uses the exact reset time from headers if available, otherwise exponential backoff
  */
 function getWaitTime(error: LagoRateLimitError, attempt: number): number {
-  // Use the exact reset time from the header
-  let waitMs = error.retryAfter;
+  let waitMs: number;
+
+  if (error.reset > 0) {
+    // Use the exact reset time from the header
+    waitMs = error.retryAfter;
+  } else {
+    // Exponential backoff: 1s, 2s, 4s, 8s, etc.
+    waitMs = 1000 * Math.pow(2, attempt);
+  }
 
   // Add small jitter to prevent thundering herd (max 100ms)
   const jitter = Math.random() * 100;
