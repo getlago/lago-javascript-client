@@ -1,11 +1,17 @@
 import { assertEquals } from "../dev_deps.ts";
-import { mf } from "../dev_deps.ts";
 import {
   Client,
   LagoRateLimitError,
   parseRateLimitHeaders,
   createRateLimitFetch,
 } from "../mod.ts";
+
+// Simple fetch mock helper (replaces broken mock_fetch library)
+function createMockFetch(handler: (input: RequestInfo | URL, init?: RequestInit) => Response | Promise<Response>): typeof fetch {
+  return (input: RequestInfo | URL, init?: RequestInit) => {
+    return Promise.resolve(handler(input, init));
+  };
+}
 
 Deno.test("LagoRateLimitError contains rate limit information", () => {
   const error = new LagoRateLimitError(100, 0, 60);
@@ -58,9 +64,7 @@ Deno.test("parseRateLimitHeaders handles invalid header values", () => {
 });
 
 Deno.test("createRateLimitFetch throws LagoRateLimitError on 429 without retry", async () => {
-  const { fetch, mock } = mf.sandbox();
-
-  mock("https://example.com/api", () => {
+  const mockFetch = createMockFetch(() => {
     return new Response("Rate limited", {
       status: 429,
       headers: {
@@ -71,7 +75,7 @@ Deno.test("createRateLimitFetch throws LagoRateLimitError on 429 without retry",
     });
   });
 
-  const rateLimitFetch = createRateLimitFetch(fetch, {
+  const rateLimitFetch = createRateLimitFetch(mockFetch, {
     retryOnRateLimit: false,
   });
 
@@ -90,10 +94,9 @@ Deno.test("createRateLimitFetch throws LagoRateLimitError on 429 without retry",
 });
 
 Deno.test("createRateLimitFetch retries on 429 with correct wait time", async () => {
-  const { fetch, mock } = mf.sandbox();
   let callCount = 0;
 
-  mock("https://example.com/api", () => {
+  const mockFetch = createMockFetch(() => {
     callCount++;
     if (callCount === 1) {
       return new Response("Rate limited", {
@@ -115,7 +118,7 @@ Deno.test("createRateLimitFetch retries on 429 with correct wait time", async ()
     });
   });
 
-  const rateLimitFetch = createRateLimitFetch(fetch, {
+  const rateLimitFetch = createRateLimitFetch(mockFetch, {
     retryOnRateLimit: true,
     maxRetries: 3,
   });
@@ -131,10 +134,9 @@ Deno.test("createRateLimitFetch retries on 429 with correct wait time", async ()
 });
 
 Deno.test("createRateLimitFetch respects maxRetries", async () => {
-  const { fetch, mock } = mf.sandbox();
   let callCount = 0;
 
-  mock("https://example.com/api", () => {
+  const mockFetch = createMockFetch(() => {
     callCount++;
     return new Response("Rate limited", {
       status: 429,
@@ -146,7 +148,7 @@ Deno.test("createRateLimitFetch respects maxRetries", async () => {
     });
   });
 
-  const rateLimitFetch = createRateLimitFetch(fetch, {
+  const rateLimitFetch = createRateLimitFetch(mockFetch, {
     retryOnRateLimit: true,
     maxRetries: 2,
   });
@@ -165,15 +167,13 @@ Deno.test("createRateLimitFetch respects maxRetries", async () => {
 });
 
 Deno.test("createRateLimitFetch passes through non-429 errors", async () => {
-  const { fetch, mock } = mf.sandbox();
-
-  mock("https://example.com/api", () => {
+  const mockFetch = createMockFetch(() => {
     return new Response("Server error", {
       status: 500,
     });
   });
 
-  const rateLimitFetch = createRateLimitFetch(fetch, {
+  const rateLimitFetch = createRateLimitFetch(mockFetch, {
     retryOnRateLimit: true,
   });
 
@@ -181,35 +181,14 @@ Deno.test("createRateLimitFetch passes through non-429 errors", async () => {
   assertEquals(response.status, 500);
 });
 
-Deno.test("Client with rateLimitRetry config uses rate limit fetch", async () => {
-  const { fetch, mock } = mf.sandbox();
-  let callCount = 0;
-
-  mock("https://api.example.com/api/v1/customers", () => {
-    callCount++;
-    if (callCount === 1) {
-      return new Response("Rate limited", {
-        status: 429,
-        headers: {
-          "x-ratelimit-limit": "100",
-          "x-ratelimit-remaining": "0",
-          "x-ratelimit-reset": "1",
-        },
-      });
-    }
-    return new Response('{"customers": []}', {
-      status: 200,
-      headers: {
-        "x-ratelimit-limit": "100",
-        "x-ratelimit-remaining": "99",
-        "x-ratelimit-reset": "3600",
-      },
-    });
+Deno.test("Client with rateLimitRetry config uses rate limit fetch", () => {
+  const mockFetch = createMockFetch(() => {
+    return new Response('{"customers": []}', { status: 200 });
   });
 
   const client = Client("test-api-key", {
     baseUrl: "https://api.example.com",
-    customFetch: fetch,
+    customFetch: mockFetch,
     rateLimitRetry: {
       retryOnRateLimit: true,
       maxRetries: 3,
@@ -218,13 +197,10 @@ Deno.test("Client with rateLimitRetry config uses rate limit fetch", async () =>
 
   // Verify client was created
   assertEquals(typeof client, "object");
-  assertEquals(callCount, 0); // Not called yet
 });
 
 Deno.test("createRateLimitFetch includes rate limit headers in success response", async () => {
-  const { fetch, mock } = mf.sandbox();
-
-  mock("https://example.com/api", () => {
+  const mockFetch = createMockFetch(() => {
     return new Response('{"data": "test"}', {
       status: 200,
       headers: {
@@ -236,7 +212,7 @@ Deno.test("createRateLimitFetch includes rate limit headers in success response"
     });
   });
 
-  const rateLimitFetch = createRateLimitFetch(fetch);
+  const rateLimitFetch = createRateLimitFetch(mockFetch);
   const response = await rateLimitFetch("https://example.com/api");
 
   assertEquals(response.status, 200);
