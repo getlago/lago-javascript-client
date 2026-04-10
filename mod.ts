@@ -1,7 +1,26 @@
 // deno-lint-ignore-file no-explicit-any
 import { Api, ApiConfig, HttpResponse } from "./openapi/client.ts";
+import { createRateLimitFetch } from "./rate_limit_fetch.ts";
+import type { RateLimitFetchConfig } from "./rate_limit_fetch.ts";
 
-export const Client = (apiKey: string, apiConfig?: ApiConfig) => {
+export interface LagoClientConfig extends ApiConfig {
+  /**
+   * Rate limit retry configuration
+   */
+  rateLimitRetry?: RateLimitFetchConfig;
+}
+
+export const Client = (apiKey: string, apiConfig?: LagoClientConfig) => {
+  const { rateLimitRetry, ...restConfig } = apiConfig ?? {};
+
+  // Create rate-limit-aware fetch if configured
+  const customFetch = rateLimitRetry
+    ? createRateLimitFetch(
+      (restConfig?.customFetch ?? globalThis.fetch) as typeof fetch,
+      rateLimitRetry,
+    )
+    : restConfig?.customFetch;
+
   const api = new Api({
     securityWorker: (apiKey) =>
       apiKey ? { headers: { Authorization: `Bearer ${apiKey}` } } : {},
@@ -9,7 +28,8 @@ export const Client = (apiKey: string, apiConfig?: ApiConfig) => {
     baseApiParams: {
       redirect: "follow",
     },
-    ...apiConfig,
+    ...restConfig,
+    ...(customFetch && { customFetch }),
   });
   api.setSecurityData(apiKey);
   return api;
@@ -41,5 +61,14 @@ export async function getLagoError<T>(error: any) {
   }
   throw new Error(error);
 }
+
+// Rate limit exports
+export { LagoRateLimitError } from "./rate_limit_error.ts";
+export { parseRateLimitHeaders, type RateLimitHeaders } from "./rate_limit_headers.ts";
+export {
+  RateLimitRetryHandler,
+  type RateLimitRetryConfig,
+} from "./rate_limit_retry.ts";
+export { createRateLimitFetch, type RateLimitFetchConfig } from "./rate_limit_fetch.ts";
 
 export * from "./openapi/client.ts";
