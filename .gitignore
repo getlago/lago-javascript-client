@@ -104,3 +104,4 @@ npm/
 openapi/
 ARCHITECTURE.md
 .claude
+deno.lock
