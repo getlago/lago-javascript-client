@@ -12,6 +12,8 @@ export interface RateLimitFetchConfig {
   maxRetries?: number;
   /** Whether to automatically retry on rate limit (default: true) */
   retryOnRateLimit?: boolean;
+  /** Maximum delay in milliseconds before a retry (default: 20000) */
+  maxRetryDelay?: number;
 }
 
 /**
@@ -24,6 +26,7 @@ export function createRateLimitFetch(
 ): typeof fetch {
   const maxRetries = config.maxRetries ?? 3;
   const retryOnRateLimit = config.retryOnRateLimit ?? true;
+  const maxRetryDelay = config.maxRetryDelay ?? 20_000;
 
   return async function rateLimitFetch(
     input: RequestInfo | URL,
@@ -53,7 +56,7 @@ export function createRateLimitFetch(
           }
 
           // Wait before retry
-          const waitMs = getWaitTime(error, attempt);
+          const waitMs = getWaitTime(error, attempt, maxRetryDelay);
           await sleep(waitMs);
           continue; // Retry
         }
@@ -83,7 +86,11 @@ export function createRateLimitFetch(
  * Calculate wait time before retry
  * Uses the exact reset time from headers if available, otherwise exponential backoff
  */
-function getWaitTime(error: LagoRateLimitError, attempt: number): number {
+function getWaitTime(
+  error: LagoRateLimitError,
+  attempt: number,
+  maxRetryDelay: number,
+): number {
   let waitMs: number;
 
   if (error.reset > 0) {
@@ -93,6 +100,9 @@ function getWaitTime(error: LagoRateLimitError, attempt: number): number {
     // Exponential backoff: 1s, 2s, 4s, 8s, etc.
     waitMs = 1000 * Math.pow(2, attempt);
   }
+
+  // Cap at maxRetryDelay
+  waitMs = Math.min(waitMs, maxRetryDelay);
 
   // Add small jitter to prevent thundering herd (max 100ms)
   const jitter = Math.random() * 100;
