@@ -1,13 +1,22 @@
 import { assertEquals } from "../dev_deps.ts";
 import {
   Client,
-  LagoRateLimitError,
-  parseRateLimitHeaders,
   createRateLimitFetch,
+  LagoRateLimitError,
+  loggingRateLimitObserver,
+  parseRateLimitHeaders,
+  parseRateLimitInfo,
+  type RateLimitInfo,
+  rateLimitUsagePct,
 } from "../mod.ts";
 
 // Simple fetch mock helper (replaces broken mock_fetch library)
-function createMockFetch(handler: (input: RequestInfo | URL, init?: RequestInit) => Response | Promise<Response>): typeof fetch {
+function createMockFetch(
+  handler: (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) => Response | Promise<Response>,
+): typeof fetch {
   return (input: RequestInfo | URL, init?: RequestInit) => {
     return Promise.resolve(handler(input, init));
   };
@@ -259,4 +268,214 @@ Deno.test("LagoRateLimitError is instanceof Error", () => {
   const error = new LagoRateLimitError(100, 0, 60);
   assertEquals(error instanceof Error, true);
   assertEquals(error instanceof LagoRateLimitError, true);
+});
+
+// ---------------------------------------------------------------------------
+// Rate limit observability
+// ---------------------------------------------------------------------------
+
+Deno.test("rateLimitUsagePct returns the fraction used", () => {
+  assertEquals(
+    rateLimitUsagePct({ limit: 100, remaining: 20, reset: 5 }),
+    0.8,
+  );
+  assertEquals(
+    rateLimitUsagePct({ limit: 100, remaining: 0, reset: 5 }),
+    1,
+  );
+});
+
+Deno.test("rateLimitUsagePct returns null when headers are unusable", () => {
+  assertEquals(
+    rateLimitUsagePct({ limit: null, remaining: 20, reset: 5 }),
+    null,
+  );
+  assertEquals(
+    rateLimitUsagePct({ limit: 100, remaining: null, reset: 5 }),
+    null,
+  );
+  assertEquals(
+    rateLimitUsagePct({ limit: 0, remaining: 0, reset: 5 }),
+    null,
+  );
+});
+
+Deno.test("parseRateLimitInfo returns null when no headers are present", () => {
+  const headers = new Headers({ "content-type": "application/json" });
+  assertEquals(parseRateLimitInfo(headers, "GET", "https://x"), null);
+});
+
+Deno.test("parseRateLimitInfo returns populated info when headers exist", () => {
+  const headers = new Headers({
+    "x-ratelimit-limit": "100",
+    "x-ratelimit-remaining": "42",
+    "x-ratelimit-reset": "5",
+  });
+
+  const info = parseRateLimitInfo(headers, "POST", "https://x");
+  assertEquals(info, {
+    limit: 100,
+    remaining: 42,
+    reset: 5,
+    method: "POST",
+    url: "https://x",
+  });
+});
+
+Deno.test("onRateLimitInfo fires after a successful response", async () => {
+  const captured: RateLimitInfo[] = [];
+
+  const mockFetch = createMockFetch(() =>
+    new Response('{"ok": true}', {
+      status: 200,
+      headers: {
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-remaining": "20",
+        "x-ratelimit-reset": "5",
+      },
+    })
+  );
+
+  const fetchWithLimits = createRateLimitFetch(mockFetch, {
+    onRateLimitInfo: (info) => captured.push(info),
+  });
+
+  await fetchWithLimits("https://example.com/api", { method: "POST" });
+
+  assertEquals(captured.length, 1);
+  assertEquals(captured[0].limit, 100);
+  assertEquals(captured[0].remaining, 20);
+  assertEquals(captured[0].reset, 5);
+  assertEquals(captured[0].method, "POST");
+  assertEquals(captured[0].url, "https://example.com/api");
+});
+
+Deno.test(
+  "onRateLimitInfo does not fire when rate limit headers are absent",
+  async () => {
+    let called = 0;
+
+    const mockFetch = createMockFetch(() =>
+      new Response('{"ok": true}', { status: 200 })
+    );
+    const fetchWithLimits = createRateLimitFetch(mockFetch, {
+      onRateLimitInfo: () => called++,
+    });
+
+    await fetchWithLimits("https://example.com/api");
+    assertEquals(called, 0);
+  },
+);
+
+Deno.test(
+  "onRateLimitInfo errors are swallowed so the request still returns",
+  async () => {
+    const mockFetch = createMockFetch(() =>
+      new Response('{"ok": true}', {
+        status: 200,
+        headers: {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "1",
+          "x-ratelimit-reset": "5",
+        },
+      })
+    );
+    const fetchWithLimits = createRateLimitFetch(mockFetch, {
+      onRateLimitInfo: () => {
+        throw new Error("intentional");
+      },
+    });
+
+    const response = await fetchWithLimits("https://example.com/api");
+    assertEquals(response.status, 200);
+  },
+);
+
+Deno.test(
+  "onRateLimitInfo fires once after a 429-then-200 retry sequence",
+  async () => {
+    const captured: RateLimitInfo[] = [];
+    let calls = 0;
+
+    const mockFetch = createMockFetch(() => {
+      calls++;
+      if (calls === 1) {
+        return new Response("{}", {
+          status: 429,
+          headers: { "x-ratelimit-reset": "0" },
+        });
+      }
+      return new Response('{"ok": true}', {
+        status: 200,
+        headers: {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "50",
+          "x-ratelimit-reset": "5",
+        },
+      });
+    });
+
+    const fetchWithLimits = createRateLimitFetch(mockFetch, {
+      maxRetryDelay: 0, // skip the wait
+      onRateLimitInfo: (info) => captured.push(info),
+    });
+
+    await fetchWithLimits("https://example.com/api");
+    assertEquals(captured.length, 1);
+    assertEquals(captured[0].remaining, 50);
+  },
+);
+
+Deno.test("loggingRateLimitObserver logs above threshold", () => {
+  const messages: string[] = [];
+  const observer = loggingRateLimitObserver({
+    thresholds: [0.8, 0.9, 0.95],
+    log: (m) => messages.push(m),
+  });
+
+  observer({
+    limit: 100,
+    remaining: 4,
+    reset: 10,
+    method: "GET",
+    url: "https://x",
+  });
+
+  assertEquals(messages.length, 1);
+  assertEquals(messages[0].includes("96%"), true);
+});
+
+Deno.test("loggingRateLimitObserver is silent below threshold", () => {
+  const messages: string[] = [];
+  const observer = loggingRateLimitObserver({
+    thresholds: [0.8],
+    log: (m) => messages.push(m),
+  });
+
+  observer({
+    limit: 100,
+    remaining: 50,
+    reset: 10,
+    method: "GET",
+    url: "https://x",
+  });
+
+  assertEquals(messages.length, 0);
+});
+
+Deno.test("loggingRateLimitObserver is silent when usage is unavailable", () => {
+  const messages: string[] = [];
+  const observer = loggingRateLimitObserver({
+    log: (m) => messages.push(m),
+  });
+
+  observer({
+    limit: null,
+    remaining: null,
+    reset: null,
+    method: "GET",
+    url: "https://x",
+  });
+
+  assertEquals(messages.length, 0);
 });

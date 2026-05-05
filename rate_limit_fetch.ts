@@ -1,8 +1,19 @@
 import { LagoRateLimitError } from "./rate_limit_error.ts";
 import {
   parseRateLimitHeaders,
-  type RateLimitHeaders,
+  parseRateLimitInfo,
+  type RateLimitInfo,
 } from "./rate_limit_headers.ts";
+
+/**
+ * Callback invoked after every successful response with parsed rate limit
+ * headers. Use this to build observability around the rate limit (warn at
+ * thresholds, emit metrics, etc.).
+ *
+ * Errors thrown by the callback are caught and logged so they cannot break
+ * the underlying request flow.
+ */
+export type RateLimitInfoCallback = (info: RateLimitInfo) => void;
 
 /**
  * Configuration for rate limit fetch behavior
@@ -14,6 +25,11 @@ export interface RateLimitFetchConfig {
   retryOnRateLimit?: boolean;
   /** Maximum delay in milliseconds before a retry (default: 20000) */
   maxRetryDelay?: number;
+  /**
+   * Optional callback invoked after every successful (non-429) response
+   * with parsed rate limit headers. See `RateLimitInfoCallback`.
+   */
+  onRateLimitInfo?: RateLimitInfoCallback;
 }
 
 /**
@@ -27,6 +43,7 @@ export function createRateLimitFetch(
   const maxRetries = config.maxRetries ?? 3;
   const retryOnRateLimit = config.retryOnRateLimit ?? true;
   const maxRetryDelay = config.maxRetryDelay ?? 20_000;
+  const onRateLimitInfo = config.onRateLimitInfo;
 
   return async function rateLimitFetch(
     input: RequestInfo | URL,
@@ -61,7 +78,10 @@ export function createRateLimitFetch(
           continue; // Retry
         }
 
-        // Success or non-rate-limit error - return the response
+        // Success or non-rate-limit error: emit observability info and return
+        if (onRateLimitInfo) {
+          emitRateLimitInfo(onRateLimitInfo, response, input, init);
+        }
         return response;
       } catch (error) {
         lastError = error;
@@ -80,6 +100,36 @@ export function createRateLimitFetch(
 
     throw lastError;
   };
+}
+
+/**
+ * Invoke the configured callback with parsed rate limit info, swallowing any
+ * exception so a buggy observer cannot break the request.
+ */
+function emitRateLimitInfo(
+  callback: RateLimitInfoCallback,
+  response: Response,
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): void {
+  try {
+    const method = (init?.method ?? "GET").toUpperCase();
+    const url = requestUrl(input);
+    const info = parseRateLimitInfo(response.headers, method, url);
+    if (info === null) return;
+    callback(info);
+  } catch (err) {
+    // Never let observability break the request flow.
+    // deno-lint-ignore no-console
+    console.warn("Lago: onRateLimitInfo callback raised:", err);
+  }
+}
+
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.toString();
+  // Request
+  return (input as Request).url;
 }
 
 /**
