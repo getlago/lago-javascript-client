@@ -479,3 +479,58 @@ Deno.test("loggingRateLimitObserver is silent when usage is unavailable", () => 
 
   assertEquals(messages.length, 0);
 });
+
+Deno.test(
+  "onRateLimitInfo reads method from a Request input when init is undefined",
+  async () => {
+    const captured: RateLimitInfo[] = [];
+
+    const mockFetch = createMockFetch(() =>
+      new Response('{"ok": true}', {
+        status: 200,
+        headers: {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "10",
+          "x-ratelimit-reset": "5",
+        },
+      })
+    );
+    const fetchWithLimits = createRateLimitFetch(mockFetch, {
+      onRateLimitInfo: (info) => captured.push(info),
+    });
+
+    const request = new Request("https://example.com/api", {
+      method: "DELETE",
+    });
+    await fetchWithLimits(request);
+
+    assertEquals(captured.length, 1);
+    assertEquals(captured[0].method, "DELETE");
+    assertEquals(captured[0].url, "https://example.com/api");
+  },
+);
+
+Deno.test(
+  "onRateLimitInfo does not fire on non-2xx, non-429 responses",
+  async () => {
+    const captured: RateLimitInfo[] = [];
+
+    const mockFetch = createMockFetch(() =>
+      new Response("oops", {
+        status: 500,
+        headers: {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "10",
+          "x-ratelimit-reset": "5",
+        },
+      })
+    );
+    const fetchWithLimits = createRateLimitFetch(mockFetch, {
+      onRateLimitInfo: (info) => captured.push(info),
+    });
+
+    const response = await fetchWithLimits("https://example.com/api");
+    assertEquals(response.status, 500);
+    assertEquals(captured.length, 0);
+  },
+);

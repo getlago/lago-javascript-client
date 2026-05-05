@@ -78,8 +78,10 @@ export function createRateLimitFetch(
           continue; // Retry
         }
 
-        // Success or non-rate-limit error: emit observability info and return
-        if (onRateLimitInfo) {
+        // Success: emit observability info. Non-2xx, non-429 responses are
+        // returned as-is without invoking the callback because their headers
+        // do not carry useful rate limit context.
+        if (onRateLimitInfo && response.ok) {
           emitRateLimitInfo(onRateLimitInfo, response, input, init);
         }
         return response;
@@ -113,7 +115,11 @@ function emitRateLimitInfo(
   init?: RequestInit,
 ): void {
   try {
-    const method = (init?.method ?? "GET").toUpperCase();
+    // Honor the method on a Request input when init.method is undefined
+    // (a valid fetch signature: fetch(new Request(url, { method: 'POST' }))).
+    const method = (
+      init?.method ?? (input instanceof Request ? input.method : "GET")
+    ).toUpperCase();
     const url = requestUrl(input);
     const info = parseRateLimitInfo(response.headers, method, url);
     if (info === null) return;
