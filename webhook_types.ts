@@ -8,6 +8,18 @@
 // (e.g. `alert_triggered`). We re-key here by the dotted `webhook_type`
 // literal (e.g. `alert.triggered`) so that the public API matches the
 // string customers actually see on the wire.
+//
+// Note on nested types: the payload types here are produced by
+// `openapi-typescript`, while the SDK's component exports (e.g.
+// `CustomerObject`, `InvoiceObjectExtended`) are produced by
+// `swagger-typescript-api`. The two generators interpret the same schema
+// slightly differently for nullable fields, so a value typed as
+// `LagoWebhookPayloads['customer.created']['customer']` is not always
+// structurally equal to `CustomerObject` from the main SDK exports. Both
+// are valid views of the same wire shape; the openapi-typescript view is
+// the more accurate one for what actually arrives over the network. If
+// you pass webhook objects into helpers typed with SDK components, a
+// narrowing cast may be required.
 
 import type { webhooks } from "./openapi/webhooks.ts";
 
