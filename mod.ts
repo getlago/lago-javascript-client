@@ -83,3 +83,11 @@ export {
 } from "./logging_rate_limit_observer.ts";
 
 export * from "./openapi/client.ts";
+
+// Webhook payload types (see webhook_types.ts and openapi/webhooks.ts)
+export type {
+  LagoWebhookPayload,
+  LagoWebhookPayloads,
+  LagoWebhookType,
+  WebhookOf,
+} from "./webhook_types.ts";

@@ -1,8 +1,12 @@
 {
 	"tasks": {
-		"build": "deno task generate:openapi && deno task generate:npm-package",
+		"build": "deno task generate:openapi && deno task generate:webhooks && deno task generate:npm-package",
 		"generate:npm-package": "deno run -A scripts/build_npm.ts",
 		"generate:openapi": "npx -y swagger-typescript-api@13.0.2 -p https://swagger.getlago.com/openapi.yaml --union-enums -o ./openapi -n client.ts",
+		// Generates ./openapi/webhooks.ts containing typed webhook payload schemas from the OpenAPI 3.1 `webhooks:` key. swagger-typescript-api does not handle that key, so we use openapi-typescript here instead. The output is consumed by ../webhook_types.ts (hand-written) which exposes the user-facing helpers.
+		"generate:webhooks": "npx -y openapi-typescript@7.13.0 https://swagger.getlago.com/openapi.yaml -o ./openapi/webhooks.ts",
+		// Typechecks the public surface and the webhook type tests. Cheap (no runtime, no network), suitable for CI. Run after `generate:openapi` and `generate:webhooks` so the generated files exist on disk.
+		"typecheck": "deno check mod.ts webhook_types.ts tests/webhook_types.test.ts",
 		"test": "deno test ./tests --parallel"
 	}
 }

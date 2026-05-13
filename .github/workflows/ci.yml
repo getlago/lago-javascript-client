@@ -27,3 +27,5 @@ jobs:
           deno-version: v1.x
       - name: Build project
         run: deno task build
+      - name: Typecheck webhook types
+        run: deno task typecheck

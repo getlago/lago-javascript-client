@@ -71,6 +71,44 @@ try {
 }
 ```
 
+### Webhook payload types
+
+The SDK exposes TypeScript types for every webhook event Lago emits. The types are generated from the OpenAPI spec, so they stay in sync with the API.
+
+Indexed lookup by `webhook_type`:
+
+```typescript
+import type { LagoWebhookPayloads } from 'lago-javascript-client';
+
+app.post('/webhooks', (req, res) => {
+    const event = req.body as LagoWebhookPayloads['alert.triggered'];
+    // event.triggered_alert is fully typed
+    console.log(event.triggered_alert.external_customer_id);
+    res.sendStatus(200);
+});
+```
+
+Discriminated union for handlers that cover multiple events:
+
+```typescript
+import type { LagoWebhookPayload } from 'lago-javascript-client';
+
+function handle(event: LagoWebhookPayload) {
+    switch (event.webhook_type) {
+        case 'alert.triggered':
+            // event.triggered_alert is typed
+            return event.triggered_alert;
+        case 'invoice.created':
+            // event.invoice is typed
+            return event.invoice;
+        case 'subscription.terminated':
+            return event.subscription;
+    }
+}
+```
+
+A `WebhookOf<T>` helper is also exported for picking a single payload type by name, and `LagoWebhookType` gives the union of all event-type strings.
+
 ## Development
 
 Uses [dnt](https://github.com/denoland/dnt) to build and test for Deno and Node.
