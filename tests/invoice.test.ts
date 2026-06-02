@@ -86,6 +86,14 @@ const invoiceResponse = {
           "code": "code",
           "name": "name",
         },
+        "presentation_breakdowns": [
+          {
+            "presentation_by": {
+              "region": "europe",
+            },
+            "units": "2.0",
+          },
+        ],
       },
     ],
     "credits": [

@@ -1,4 +1,9 @@
-import type { Customer, CustomerInput, CustomerUsage } from "../mod.ts";
+import type {
+  Customer,
+  CustomerInput,
+  CustomerProjectedUsage,
+  CustomerUsage,
+} from "../mod.ts";
 import {
   lagoTest,
   notFoundErrorResponse,
@@ -103,10 +108,204 @@ const customerUsage = {
             "amount_cents": 1200,
           },
         ],
+        "filters": [
+          {
+            "units": "1.0",
+            "amount_cents": 600,
+            "events_count": 3,
+            "values": {
+              "region": ["europe"],
+            },
+            "presentation_breakdowns": [
+              {
+                "presentation_by": {
+                  "team": "engineering",
+                },
+                "units": "1.0",
+              },
+            ],
+          },
+        ],
+        "grouped_usage": [
+          {
+            "units": "2.0",
+            "amount_cents": 800,
+            "events_count": 4,
+            "grouped_by": {
+              "region": "europe",
+            },
+            "filters": [
+              {
+                "units": "1.0",
+                "amount_cents": 400,
+                "events_count": 2,
+                "values": {
+                  "cloud": ["aws"],
+                },
+                "presentation_breakdowns": [
+                  {
+                    "presentation_by": {
+                      "team": "operations",
+                    },
+                    "units": "1.0",
+                  },
+                ],
+              },
+            ],
+            "presentation_breakdowns": [
+              {
+                "presentation_by": {
+                  "team": "engineering",
+                },
+                "units": "2.0",
+              },
+            ],
+          },
+        ],
+        "presentation_breakdowns": [
+          {
+            "presentation_by": {
+              "region": "europe",
+            },
+            "units": "2.0",
+          },
+        ],
       },
     ],
   },
 } satisfies CustomerUsage;
+
+const customerProjectedUsage = {
+  "customer_projected_usage": {
+    "from_datetime": "2022-09-14T00:00:00Z",
+    "to_datetime": "2022-09-14T00:00:00Z",
+    "issuing_date": "2022-09-15T00:00:00Z",
+    "amount_cents": 1200,
+    "projected_amount_cents": 2400,
+    "taxes_amount_cents": 200,
+    "total_amount_cents": 2600,
+    "charges_usage": [
+      {
+        "units": "3.0",
+        "projected_units": "6.0",
+        "events_count": 5,
+        "amount_cents": 1200,
+        "projected_amount_cents": 2400,
+        "amount_currency": "EUR",
+        "charge": {
+          "lago_id": "278da83c-c007-4fbb-afcd-b00c07c41utg",
+          "charge_model": "standard",
+        },
+        "billable_metric": {
+          "lago_id": "278da83c-c007-4fbb-afcd-b00c07c41utg",
+          "name": "Example name",
+          "code": "code",
+          "aggregation_type": "count_agg",
+        },
+        "filters": [
+          {
+            "units": "1.0",
+            "projected_units": "2.0",
+            "amount_cents": 600,
+            "projected_amount_cents": 1200,
+            "events_count": 3,
+            "values": {
+              "region": ["europe"],
+            },
+            "presentation_breakdowns": [
+              {
+                "presentation_by": {
+                  "team": "engineering",
+                },
+                "units": "1.0",
+              },
+            ],
+            "projected_presentation_breakdowns": [
+              {
+                "presentation_by": {
+                  "team": "engineering",
+                },
+                "units": "2.0",
+              },
+            ],
+          },
+        ],
+        "grouped_usage": [
+          {
+            "units": "2.0",
+            "projected_units": "4.0",
+            "amount_cents": 800,
+            "projected_amount_cents": 1600,
+            "events_count": 4,
+            "grouped_by": {
+              "region": "europe",
+            },
+            "filters": [
+              {
+                "units": "1.0",
+                "projected_units": "2.0",
+                "amount_cents": 400,
+                "projected_amount_cents": 800,
+                "events_count": 2,
+                "values": {
+                  "cloud": ["aws"],
+                },
+                "presentation_breakdowns": [
+                  {
+                    "presentation_by": {
+                      "team": "operations",
+                    },
+                    "units": "1.0",
+                  },
+                ],
+                "projected_presentation_breakdowns": [
+                  {
+                    "presentation_by": {
+                      "team": "operations",
+                    },
+                    "units": "2.0",
+                  },
+                ],
+              },
+            ],
+            "presentation_breakdowns": [
+              {
+                "presentation_by": {
+                  "team": "engineering",
+                },
+                "units": "2.0",
+              },
+            ],
+            "projected_presentation_breakdowns": [
+              {
+                "presentation_by": {
+                  "team": "engineering",
+                },
+                "units": "4.0",
+              },
+            ],
+          },
+        ],
+        "presentation_breakdowns": [
+          {
+            "presentation_by": {
+              "region": "europe",
+            },
+            "units": "3.0",
+          },
+        ],
+        "projected_presentation_breakdowns": [
+          {
+            "presentation_by": {
+              "region": "europe",
+            },
+            "units": "6.0",
+          },
+        ],
+      },
+    ],
+  },
+} satisfies CustomerProjectedUsage;
 
 Deno.test("Successfully sent customer responds with 2xx", async (t) => {
   await lagoTest({
@@ -138,10 +337,16 @@ Deno.test("Current usage responds with a 2xx", async (t) => {
     testType: "200",
     route: "GET@/api/v1/customers/external_customer_id/current_usage",
     clientPath: ["customers", "findCustomerCurrentUsage"],
-    inputParams: ["external_customer_id", { external_subscription_id: "123" }],
+    inputParams: ["external_customer_id", {
+      external_subscription_id: "123",
+      filter_by_presentation: '["europe"]',
+    }],
     responseObject: customerUsage,
     status: 200,
-    urlParams: { external_subscription_id: "123" },
+    urlParams: {
+      external_subscription_id: "123",
+      filter_by_presentation: '["europe"]',
+    },
   });
 });
 
@@ -154,6 +359,19 @@ Deno.test("Current usage responds with other than 2xx", async (t) => {
     inputParams: ["external_customer_id", { external_subscription_id: "123" }],
     responseObject: notFoundErrorResponse,
     status: 404,
+    urlParams: { external_subscription_id: "123" },
+  });
+});
+
+Deno.test("Projected usage responds with a 2xx", async (t) => {
+  await lagoTest({
+    t,
+    testType: "200",
+    route: "GET@/api/v1/customers/external_customer_id/projected_usage",
+    clientPath: ["customers", "findCustomerProjectedUsage"],
+    inputParams: ["external_customer_id", { external_subscription_id: "123" }],
+    responseObject: customerProjectedUsage,
+    status: 200,
     urlParams: { external_subscription_id: "123" },
   });
 });
