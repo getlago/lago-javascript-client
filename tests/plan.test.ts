@@ -17,7 +17,16 @@ const planInput = {
         "id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
         "billable_metric_id": "278da83c-c007-4fbb-afcd-b00c07c41utg",
         "charge_model": "standard",
-        "properties": {},
+        "properties": {
+          "presentation_group_keys": [
+            {
+              "value": "region",
+              "options": {
+                "display_in_invoice": true,
+              },
+            },
+          ],
+        },
         "group_properties": [
           {
             "group_id": "123456",
@@ -48,7 +57,16 @@ const planResponse = {
         "lago_billable_metric_id": "278da83c-c007-4fbb-afcd-b00c07c41utg",
         "created_at": "2022-09-14T16:35:31Z",
         "charge_model": "standard",
-        "properties": {},
+        "properties": {
+          "presentation_group_keys": [
+            {
+              "value": "region",
+              "options": {
+                "display_in_invoice": true,
+              },
+            },
+          ],
+        },
         "group_properties": [
           {
             "group_id": "123456",
