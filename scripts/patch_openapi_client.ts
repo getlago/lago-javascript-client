@@ -1,20 +1,8 @@
-// The deprecated GET /webhooks/public_key endpoint (see webhooks.fetchPublicKey)
-// responds with `text/plain`, not JSON. swagger-typescript-api has no mapping
-// for that content type, so the generated method comes out with no `format`
-// at all, and `.data` is never populated (see openapi/client.ts's
-// HttpClient#request: `responseFormat` stays falsy and `r.data` is never
-// assigned).
-//
-// The real fix for new integrations is GET /webhooks/json_public_key
-// (see webhooks.fetchJsonPublicKey), which is now documented in the spec and
-// needs no patch at all — it generates a normal `format: "json"` method like
-// every other endpoint. This script only exists so the deprecated method
-// stops silently returning null for anyone still calling it.
-//
-// Runs right after `generate:openapi` (wired in deno.jsonc) so the fix
-// survives regeneration from the live spec. Fails loudly if
-// swagger-typescript-api's output for this endpoint ever changes shape,
-// instead of silently doing nothing.
+// fetchPublicKey (deprecated, text/plain) generates with no `format`, so
+// `.data` is never populated. Patches it to `format: "text"` after
+// generation. fetchJsonPublicKey is unaffected, it's a normal JSON endpoint.
+// Fails loudly (rather than silently) if the generator's output ever
+// changes shape.
 
 const CLIENT_PATH = "./openapi/client.ts";
 
@@ -44,11 +32,8 @@ const patches: TextEndpointPatch[] = [
       `      }),`,
   },
   {
-    // `format: "text"` above means a failed request (e.g. 401) also reads
-    // its body with `response.text()` instead of `response.json()`, but
-    // Lago's error bodies are always JSON regardless of the success
-    // content type. Without this, `r.error` would be a raw JSON string
-    // instead of a parsed object, unlike every other endpoint in the SDK.
+    // Error bodies are always JSON even for text/plain success responses,
+    // so parse `r.error` as JSON when `responseFormat` is "text".
     match: `      const data = !responseFormat\n` +
       `        ? r\n` +
       `        : await response[responseFormat]()\n` +
@@ -96,8 +81,7 @@ for (const { match, replacement } of patches) {
   const occurrences = patched.split(match).length - 1;
 
   if (occurrences === 0) {
-    // Either already patched (unlikely, generator always overwrites) or
-    // swagger-typescript-api changed how it emits this endpoint.
+    // Already patched, or the generator's output changed shape.
     if (patched.includes(replacement)) continue;
     errors.push(
       `Could not find expected generated block to patch:\n${match}`,

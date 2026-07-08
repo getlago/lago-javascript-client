@@ -8,9 +8,7 @@ import {
 Deno.test(
   "Successfully sent webhook public key request responds with 2xx and the key as data",
   async (t) => {
-    // This endpoint responds with a raw `text/plain` body (not JSON), so it
-    // is exercised directly instead of through `lagoTest`, which always
-    // JSON-encodes `responseObject`.
+    // text/plain body, exercised directly instead of via lagoTest.
     const publicKey = "aGVsbG8=";
 
     const client = setupMockClient(
