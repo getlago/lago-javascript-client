@@ -26,20 +26,29 @@ type ExtractLagoResponse<E> = E extends (
 
 const errorMessage = "Lago Error" as const;
 
+type LagoRoute = `${"POST" | "GET" | "PUT" | "DELETE"}@/api/v1/${string}`;
 type MatchHandler = (request: Request) => Response | Promise<Response>;
 
-export function setupMockClient(route: string, handler: MatchHandler) {
-  const [method, path] = route.split("@");
+export function createMockFetch(route: LagoRoute, handler: MatchHandler) {
+  const [method, path] = route.split("@") as [string, string];
+  let request: Request | undefined;
 
   const fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-    const request = input instanceof Request ? input : new Request(input, init);
-    const url = new URL(request.url);
-
-    assertEquals(request.method, method);
-    assertEquals(url.pathname, path);
+    request = input instanceof Request ? input : new Request(input, init);
 
     return await handler(request);
   }) as typeof globalThis.fetch;
+
+  return {
+    fetch,
+    expectedMethod: method,
+    expectedPath: path,
+    getRequest: () => request,
+  };
+}
+
+export function setupMockClient(route: LagoRoute, handler: MatchHandler) {
+  const { fetch } = createMockFetch(route, handler);
 
   return Client("api_key", { customFetch: fetch });
 }
@@ -60,7 +69,7 @@ export async function lagoTest<
   }: {
     testType: "error" | "200";
     t: Deno.TestContext;
-    route: `${"POST" | "GET" | "PUT" | "DELETE"}@/api/v1/${string}`;
+    route: LagoRoute;
     clientPath: [T, U];
     inputParams: ExtractLagoInput<Api<unknown>[T][U]>;
     responseObject?: ExtractLagoDataOrError<
@@ -70,21 +79,32 @@ export async function lagoTest<
     urlParams?: Record<string, string>;
   },
 ) {
-  const client = setupMockClient(
+  const { fetch, getRequest, expectedMethod, expectedPath } = createMockFetch(
     route,
-    (_req) => {
-      if (urlParams) {
-        const urlSearchParams = new URLSearchParams(new URL(_req.url).search);
-        Object.entries(urlParams).forEach(([key, value]) => {
-          assertEquals(urlSearchParams.get(key), value);
-        });
-      }
+    () => {
       return new Response(
         responseObject ? JSON.stringify(responseObject) : null,
         { status },
       );
     },
   );
+  const client = Client("api_key", { customFetch: fetch });
+
+  const assertRequest = () => {
+    const request = getRequest();
+    if (!request) throw new Error("Expected a request to be sent");
+
+    const url = new URL(request.url);
+    assertEquals(request.method, expectedMethod);
+    assertEquals(url.pathname, expectedPath);
+
+    if (urlParams) {
+      const urlSearchParams = new URLSearchParams(url.search);
+      Object.entries(urlParams).forEach(([key, value]) => {
+        assertEquals(urlSearchParams.get(key), value);
+      });
+    }
+  };
 
   switch (testType) {
     case "error":
@@ -105,6 +125,7 @@ export async function lagoTest<
             (lagoError as ApiErrorUnprocessableEntity).error,
             errorMessage,
           );
+          assertRequest();
         }
       });
       break;
@@ -117,6 +138,7 @@ export async function lagoTest<
           ) as Response;
 
         assertEquals(response.status, 200);
+        assertRequest();
       });
       break;
 
