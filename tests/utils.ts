@@ -1,6 +1,5 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import { assertEquals } from "../dev_deps.ts";
-import { mf } from "../dev_deps.ts";
 import { Client, getLagoError } from "../mod.ts";
 import type {
   Api,
@@ -27,10 +26,20 @@ type ExtractLagoResponse<E> = E extends (
 
 const errorMessage = "Lago Error" as const;
 
-export function setupMockClient(route: string, handler: mf.MatchHandler) {
-  const { fetch, mock } = mf.sandbox();
+type MatchHandler = (request: Request) => Response | Promise<Response>;
 
-  mock(route, handler);
+export function setupMockClient(route: string, handler: MatchHandler) {
+  const [method, path] = route.split("@");
+
+  const fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const request = input instanceof Request ? input : new Request(input, init);
+    const url = new URL(request.url);
+
+    assertEquals(request.method, method);
+    assertEquals(url.pathname, path);
+
+    return await handler(request);
+  }) as typeof globalThis.fetch;
 
   return Client("api_key", { customFetch: fetch });
 }
