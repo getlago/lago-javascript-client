@@ -48,6 +48,7 @@ export async function lagoTest<
     status,
     testType,
     urlParams,
+    expectedBody,
   }: {
     testType: "error" | "200";
     t: Deno.TestContext;
@@ -59,16 +60,20 @@ export async function lagoTest<
     >;
     status: number;
     urlParams?: Record<string, string>;
+    expectedBody?: unknown;
   },
 ) {
   const client = setupMockClient(
     route,
-    (_req) => {
+    async (_req) => {
       if (urlParams) {
         const urlSearchParams = new URLSearchParams(new URL(_req.url).search);
         Object.entries(urlParams).forEach(([key, value]) => {
           assertEquals(urlSearchParams.get(key), value);
         });
+      }
+      if (expectedBody) {
+        assertEquals(await _req.json(), expectedBody);
       }
       return new Response(
         responseObject ? JSON.stringify(responseObject) : null,

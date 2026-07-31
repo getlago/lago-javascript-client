@@ -13,8 +13,11 @@ const subscriptionInput = {
     "external_id": "54321",
     "billing_time": "calendar",
     "subscription_at": "2022-08-08T00:00:00Z",
+    "purchase_order_number": "PO-123",
   },
-} satisfies SubscriptionCreateInput;
+} satisfies SubscriptionCreateInput & {
+  subscription: { purchase_order_number: string };
+};
 
 const subscriptionResponse = {
   "subscription": {
@@ -34,8 +37,11 @@ const subscriptionResponse = {
     "previous_plan_code": "previous_code",
     "next_plan_code": "next_code",
     "downgrade_plan_date": "2022-09-14T16:35:31Z",
+    "purchase_order_number": "PO-123",
   },
-} satisfies Subscription;
+} satisfies Subscription & {
+  subscription: { purchase_order_number: string };
+};
 
 const subscriptionsResponse = {
   subscriptions: [subscriptionResponse.subscription],
@@ -50,6 +56,7 @@ Deno.test("Successfully sent subscription responds with 2xx", async (t) => {
     inputParams: [subscriptionInput],
     responseObject: subscriptionResponse,
     status: 200,
+    expectedBody: subscriptionInput,
   });
 });
 
@@ -76,6 +83,7 @@ Deno.test(
       inputParams: ["id", subscriptionInput],
       responseObject: subscriptionResponse,
       status: 200,
+      expectedBody: subscriptionInput,
     });
   },
 );
