@@ -144,7 +144,7 @@ export async function lagoTest<
           ) as Response;
 
         assertEquals(response.status, 200);
-        assertRequest();
+        await assertRequest();
       });
       break;
 
