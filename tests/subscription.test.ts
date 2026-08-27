@@ -15,9 +15,7 @@ const subscriptionInput = {
     "subscription_at": "2022-08-08T00:00:00Z",
     "purchase_order_number": "PO-123",
   },
-} satisfies SubscriptionCreateInput & {
-  subscription: { purchase_order_number: string };
-};
+} as const satisfies SubscriptionCreateInput;
 
 const subscriptionResponse = {
   "subscription": {
@@ -39,9 +37,7 @@ const subscriptionResponse = {
     "downgrade_plan_date": "2022-09-14T16:35:31Z",
     "purchase_order_number": "PO-123",
   },
-} satisfies Subscription & {
-  subscription: { purchase_order_number: string };
-};
+} satisfies Subscription;
 
 const subscriptionsResponse = {
   subscriptions: [subscriptionResponse.subscription],

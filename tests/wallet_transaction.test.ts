@@ -1,16 +1,14 @@
-import type { WalletTransaction, WalletTransactionInput } from "../mod.ts";
+import type { WalletTransactionCreateInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const walletTransactionInput = {
   "wallet_transaction": {
     "wallet_id": "985da83c-c007-4fbb-afcd-b00c07c41ffe",
-    "paid_credits": 100,
-    "granted_credits": 10,
+    "paid_credits": "100",
+    "granted_credits": "10",
     "purchase_order_number": "PO-123",
   },
-} satisfies WalletTransactionInput & {
-  wallet_transaction: { purchase_order_number: string };
-};
+} satisfies WalletTransactionCreateInput;
 
 Deno.test(
   "Successfully sent wallet transaction responds with 2xx",
@@ -28,8 +26,8 @@ Deno.test(
             lago_wallet_id: "",
             status: "settled",
             transaction_type: "inbound",
-            amount: 500,
-            credit_amount: 500,
+            amount: "500",
+            credit_amount: "500",
             purchase_order_number: "PO-123",
             settled_at: "2022-09-14T16:35:31Z",
             created_at: "2022-09-14T16:35:31Z",

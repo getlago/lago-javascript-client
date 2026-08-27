@@ -1,7 +1,7 @@
 import type {
   Wallet,
-  WalletInput,
-  Wallets,
+  WalletCreateInput,
+  WalletsPaginated,
   WalletUpdateInput,
 } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
@@ -11,8 +11,8 @@ const walletInput = {
     "name": "Wallet name",
     "rate_amount": 2,
     "currency": "EUR",
-    "paid_credits": 500,
-    "granted_credits": 10,
+    "paid_credits": "500",
+    "granted_credits": "10",
     "external_customer_id": "12345",
     "expiration_at": "2022-09-14T23:59:59Z",
     "purchase_order_number": "PO-123",
@@ -21,18 +21,13 @@ const walletInput = {
         "trigger": "interval",
         "interval": "monthly",
         "method": "fixed",
-        "paid_credits": 100,
-        "granted_credits": 10,
+        "paid_credits": "100",
+        "granted_credits": "10",
         "purchase_order_number": "PO-RULE-123",
       },
     ],
   },
-} satisfies WalletInput & {
-  wallet: {
-    purchase_order_number: string;
-    recurring_transaction_rules: Array<{ purchase_order_number: string }>;
-  };
-};
+} satisfies WalletCreateInput;
 
 const walletResponse = {
   "wallet": {
@@ -58,18 +53,24 @@ const walletResponse = {
         "trigger": "interval",
         "interval": "monthly",
         "method": "fixed",
-        "paid_credits": 100,
-        "granted_credits": 10,
+        "status": "active",
+        "threshold_credits": "10",
+        "paid_credits": "100",
+        "granted_credits": "10",
+        "grants_target_top_up": null,
+        "started_at": "2022-08-08T00:00:00Z",
+        "target_ongoing_balance": null,
+        "created_at": "2022-09-14T16:35:31Z",
+        "expiration_at": null,
+        "invoice_requires_successful_payment": false,
+        "transaction_name": null,
+        "ignore_paid_top_up_limits": false,
+        "transaction_metadata": [],
         "purchase_order_number": "PO-RULE-123",
       },
     ],
   },
-} satisfies Wallet & {
-  wallet: {
-    purchase_order_number: string;
-    recurring_transaction_rules: Array<{ purchase_order_number: string }>;
-  };
-};
+} satisfies Wallet;
 
 const walletUpdateInput = {
   "wallet": {
@@ -77,13 +78,11 @@ const walletUpdateInput = {
     "expiration_at": "2022-09-14T23:59:59Z",
     "purchase_order_number": "PO-123",
   },
-} satisfies WalletUpdateInput & {
-  wallet: { purchase_order_number: string };
-};
+} satisfies WalletUpdateInput;
 
 const walletsResponse = {
-  wallets: [walletInput.wallet],
-} satisfies Wallets;
+  wallets: [walletResponse.wallet],
+} satisfies WalletsPaginated;
 
 Deno.test("Successfully sent wallet responds with 2xx", async (t) => {
   await lagoTest({

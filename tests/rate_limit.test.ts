@@ -9,17 +9,14 @@ import {
   type RateLimitInfo,
   rateLimitUsagePct,
 } from "../mod.ts";
+import { createMockFetch as createLagoMockFetch } from "./utils.ts";
 
-// Simple fetch mock helper (replaces broken mock_fetch library)
+// Route is irrelevant here since these tests never assert method/path,
+// so any value satisfying LagoRoute works.
 function createMockFetch(
-  handler: (
-    input: RequestInfo | URL,
-    init?: RequestInit,
-  ) => Response | Promise<Response>,
+  handler: (request: Request) => Response | Promise<Response>,
 ): typeof fetch {
-  return (input: RequestInfo | URL, init?: RequestInit) => {
-    return Promise.resolve(handler(input, init));
-  };
+  return createLagoMockFetch("GET@/api/v1/mock", handler).fetch;
 }
 
 Deno.test("LagoRateLimitError contains rate limit information", () => {
