@@ -66,6 +66,7 @@ export async function lagoTest<
     status,
     testType,
     urlParams,
+    expectedBody,
   }: {
     testType: "error" | "200";
     t: Deno.TestContext;
@@ -77,6 +78,7 @@ export async function lagoTest<
     >;
     status: number;
     urlParams?: Record<string, string>;
+    expectedBody?: unknown;
   },
 ) {
   const { fetch, getRequest, expectedMethod, expectedPath } = createMockFetch(
@@ -90,7 +92,7 @@ export async function lagoTest<
   );
   const client = Client("api_key", { customFetch: fetch });
 
-  const assertRequest = () => {
+  const assertRequest = async () => {
     const request = getRequest();
     if (!request) throw new Error("Expected a request to be sent");
 
@@ -103,6 +105,10 @@ export async function lagoTest<
       Object.entries(urlParams).forEach(([key, value]) => {
         assertEquals(urlSearchParams.get(key), value);
       });
+    }
+
+    if (expectedBody !== undefined) {
+      assertEquals(await request.json(), expectedBody);
     }
   };
 
@@ -125,7 +131,7 @@ export async function lagoTest<
             (lagoError as ApiErrorUnprocessableEntity).error,
             errorMessage,
           );
-          assertRequest();
+          await assertRequest();
         }
       });
       break;
@@ -138,7 +144,7 @@ export async function lagoTest<
           ) as Response;
 
         assertEquals(response.status, 200);
-        assertRequest();
+        await assertRequest();
       });
       break;
 
