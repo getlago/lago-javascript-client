@@ -1,24 +1,28 @@
-import type { Invoice, Invoices } from "../mod.ts";
+import type { Invoice, InvoicesPaginated } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const invoiceResponse = {
   "invoice": {
     "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
-    "sequential_id": 12345,
+    "billing_entity_code": "default",
+    "currency": "EUR",
+    "fees_amount_cents": 1200,
+    "coupons_amount_cents": 0,
+    "credit_notes_amount_cents": 0,
+    "sub_total_excluding_taxes_amount_cents": 1200,
+    "sub_total_including_taxes_amount_cents": 1220,
+    "prepaid_credit_amount_cents": 0,
+    "progressive_billing_credit_amount_cents": 0,
+    "version_number": 4,
+    "created_at": "2022-09-14T16:35:31Z",
+    "updated_at": "2022-09-14T16:35:31Z",
     "number": "222345",
     "issuing_date": "2022-09-14T16:35:31Z",
     "invoice_type": "subscription",
     "status": "finalized",
     "payment_status": "pending",
-    "amount_cents": 1200,
-    "amount_currency": "EUR",
-    "vat_amount_cents": 20,
-    "vat_amount_currency": "EUR",
-    "credit_amount_cents": 20,
-    "credit_amount_currency": "EUR",
+    "taxes_amount_cents": 20,
     "total_amount_cents": 1220,
-    "total_amount_currency": "EUR",
-    "legacy": true,
     "file_url": "https://example.com",
     "customer": {
       "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
@@ -36,7 +40,6 @@ const invoiceResponse = {
       "city": "City",
       "url": "https://example.com",
       "phone": "3551234567",
-      "lago_url": "https://lago.url",
       "legal_name": "name1",
       "legal_number": "10000",
       "currency": "EUR",
@@ -44,11 +47,9 @@ const invoiceResponse = {
       "applicable_timezone": "UTC",
       "billing_configuration": {
         "invoice_grace_period": 3,
-        "vat_rate": 25,
         "payment_provider": "stripe",
         "provider_customer_id": "123456",
         "sync_with_provider": true,
-        "additionalProp1": {},
       },
     },
     "subscriptions": [
@@ -69,20 +70,36 @@ const invoiceResponse = {
         "previous_plan_code": "previous_code",
         "next_plan_code": "next_code",
         "downgrade_plan_date": "2022-09-14T16:35:31Z",
+        "ending_at": null,
+        "trial_ended_at": null,
+        "current_billing_period_started_at": null,
+        "current_billing_period_ending_at": null,
+        "on_termination_credit_note": "credit",
+        "on_termination_invoice": "generate",
       },
     ],
     "fees": [
       {
         "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
-        "lago_group_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
+        "taxes_rate": 0,
+        "precise_unit_amount": "480",
+        "total_aggregated_units": "2.5",
+        "total_amount_cents": 1200,
+        "total_amount_currency": "EUR",
+        "pay_in_advance": false,
+        "invoiceable": true,
+        "payment_status": "succeeded",
+        "sub_total_excluding_taxes_amount_cents": 1200,
+        "sub_total_excluding_taxes_precise_amount_cents": "1200",
         "amount_cents": 1200,
         "amount_currency": "EUR",
-        "vat_amount_cents": 1200,
-        "vat_amount_currency": "EUR",
-        "units": 2.5,
+        "taxes_amount_cents": 1200,
+        "units": "2.5",
         "events_count": 5,
         "item": {
           "type": "charge",
+          "lago_item_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
+          "item_type": "BillableMetric",
           "code": "code",
           "name": "name",
         },
@@ -98,11 +115,13 @@ const invoiceResponse = {
     ],
     "credits": [
       {
+        "before_taxes": true,
+        "invoice": { "lago_id": "invoice-id", "payment_status": "succeeded" },
         "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
         "amount_cents": 1200,
         "amount_currency": "EUR",
         "item": {
-          "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
+          "lago_item_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
           "type": "coupon",
           "code": "code",
           "name": "name",
@@ -113,8 +132,9 @@ const invoiceResponse = {
 } satisfies Invoice;
 
 const invoicesResponse = {
+  meta: { current_page: 1, total_pages: 1, total_count: 1 },
   invoices: [invoiceResponse.invoice],
-} satisfies Invoices;
+} satisfies InvoicesPaginated;
 
 Deno.test(
   "Successfully sent invoice update payment status responds with 2xx",

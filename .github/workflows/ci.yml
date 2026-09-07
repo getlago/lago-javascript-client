@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      LAGO_OPENAPI_PIN: scripts/openapi-pin.json
 
     strategy:
       matrix:
@@ -29,3 +31,5 @@ jobs:
         run: deno task build
       - name: Typecheck webhook types
         run: deno task typecheck
+      - name: Test client
+        run: deno task test

@@ -99,6 +99,25 @@ for (const { match, replacement } of patches) {
   patched = patched.replace(match, replacement);
 }
 
+// Query strings can preserve all int64 cents when callers supply a decimal
+// string. Keep number compatibility and leave every response type unchanged.
+for (const operation of ["findAllPayments", "findAllCustomerPayments"]) {
+  const start = patched.indexOf(`    ${operation}: (`);
+  const end = patched.indexOf("      params: RequestParams", start);
+  if (start < 0 || end < 0) {
+    errors.push(`Missing generated operation: ${operation}`);
+    continue;
+  }
+  let query = patched.slice(start, end);
+  for (const bound of ["amount_from", "amount_to"]) {
+    const original = `${bound}?: number;`;
+    const replacement = `${bound}?: number | string;`;
+    // A published spec without payment filters still builds during rollout.
+    if (query.includes(original)) query = query.replace(original, replacement);
+  }
+  patched = patched.slice(0, start) + query + patched.slice(end);
+}
+
 if (errors.length > 0) {
   console.error("patch_openapi_client.ts failed:\n" + errors.join("\n\n"));
   Deno.exit(1);

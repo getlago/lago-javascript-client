@@ -1,7 +1,7 @@
 import type {
   Wallet,
-  WalletInput,
-  Wallets,
+  WalletCreateInput,
+  WalletsPaginated,
   WalletUpdateInput,
 } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
@@ -9,14 +9,14 @@ import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 const walletInput = {
   "wallet": {
     "name": "Wallet name",
-    "rate_amount": 2,
+    "rate_amount": "2",
     "currency": "EUR",
-    "paid_credits": 500,
-    "granted_credits": 10,
+    "paid_credits": "500",
+    "granted_credits": "10",
     "external_customer_id": "12345",
     "expiration_at": "2022-09-14T23:59:59Z",
   },
-} as const satisfies WalletInput;
+} as const satisfies WalletCreateInput;
 
 const walletResponse = {
   "wallet": {
@@ -26,10 +26,15 @@ const walletResponse = {
     "status": "active",
     "currency": "EUR",
     "name": "Name",
-    "rate_amount": 2,
-    "credits_balance": 500,
-    "balance": 1000,
-    "consumed_credits": 100,
+    "rate_amount": "2",
+    "credits_balance": "500",
+    "balance_cents": 1000,
+    "invoice_requires_successful_payment": false,
+    "ongoing_balance_cents": 1000,
+    "ongoing_usage_balance_cents": 0,
+    "credits_ongoing_balance": "500",
+    "credits_ongoing_usage_balance": "0",
+    "consumed_credits": "100",
     "created_at": "2022-09-14T16:35:31Z",
     "expiration_at": "2022-09-14T23:59:59Z",
     "last_balance_sync_at": "2022-09-14T16:35:31Z",
@@ -46,8 +51,9 @@ const walletUpdateInput = {
 } as const satisfies WalletUpdateInput;
 
 const walletsResponse = {
-  wallets: [walletInput.wallet],
-} satisfies Wallets;
+  meta: { current_page: 1, total_pages: 1, total_count: 1 },
+  wallets: [walletResponse.wallet],
+} satisfies WalletsPaginated;
 
 Deno.test("Successfully sent wallet responds with 2xx", async (t) => {
   await lagoTest({

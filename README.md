@@ -158,3 +158,46 @@ The contribution documentation is available [here](https://github.com/getlago/la
 ## License
 
 Lago JavaScript client is distributed under [MIT license](LICENSE).
+
+## Payment list filters
+
+```ts
+const result = await client.payments.findAllPayments({
+  "payment_status[]": ["succeeded", "failed"],
+  currency: "EUR",
+  amount_from: "5000000000",
+  amount_to: "9223372036854775807",
+  created_at_from: "2026-09-01",
+});
+const customerResult = await client.customers.findAllCustomerPayments("cust_1", {
+  "payment_status[]": ["succeeded"],
+  currency: "EUR",
+});
+```
+
+The generated query types include all payment filters on both endpoints. Array
+keys include `[]` and serialize as repeated query parameters. Filters combine
+with AND; entries within an array combine with OR. Use decimal strings for cents
+above `Number.MAX_SAFE_INTEGER` to preserve exact 64-bit bounds. Numbers remain
+supported for smaller bounds, including zero. Date bounds are inclusive in the
+organization timezone; receipt and invoice numbers match exactly, ignoring case.
+Payment response types are unchanged.
+
+### Generating against a feature spec
+
+Generated `openapi/` and `npm/` files remain ignored. Release generation defaults
+to the published spec. To reproduce this feature's CI build before publication:
+
+```sh
+LAGO_OPENAPI_PIN=scripts/openapi-pin.json deno task build
+deno task typecheck
+deno task test
+```
+
+The pin records an immutable OpenAPI commit and SHA-256 checksum, consumed by
+both generators. For local development, use
+`LAGO_OPENAPI_SPEC=../lago-openapi/openapi.yaml deno task build`. Set both variables
+to verify a local file against the pin. Update the pin after upstream changes;
+release builds can use the published default once the spec PR is merged and
+published. The post-generation script adds decimal-string input support only to
+payment list amount bounds.

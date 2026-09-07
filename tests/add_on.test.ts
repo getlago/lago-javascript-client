@@ -18,6 +18,7 @@ const addOnResponse = {
     amount_cents: 1000,
     amount_currency: "EUR",
     description: "description",
+    invoice_display_name: null,
     created_at: "2022-04-29T08:59:51Z",
   },
 } as const satisfies AddOn;
@@ -102,7 +103,10 @@ Deno.test(
       route: "GET@/api/v1/add_ons",
       clientPath: ["addOns", "findAllAddOns"],
       inputParams: [],
-      responseObject: { add_ons: [addOn.add_on] },
+      responseObject: {
+        meta: { current_page: 1, total_pages: 1, total_count: 1 },
+        add_ons: [addOnResponse.add_on],
+      },
       status: 200,
     });
   },
@@ -117,7 +121,10 @@ Deno.test(
       route: "GET@/api/v1/add_ons",
       clientPath: ["addOns", "findAllAddOns"],
       inputParams: [{ page: 3, per_page: 2 }],
-      responseObject: { add_ons: [addOn.add_on] },
+      responseObject: {
+        meta: { current_page: 1, total_pages: 1, total_count: 1 },
+        add_ons: [addOnResponse.add_on],
+      },
       status: 200,
       urlParams: { page: "3", per_page: "2" },
     });
