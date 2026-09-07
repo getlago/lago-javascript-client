@@ -1,4 +1,4 @@
-import type { Organization, OrganizationInput } from "../mod.ts";
+import type { Organization, OrganizationUpdateInput } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const orgInput = {
@@ -16,15 +16,17 @@ const orgInput = {
     "timezone": "Europe/Paris",
     "billing_configuration": {
       "invoice_footer": "text",
-      "vat_rate": 25,
       "invoice_grace_period": 5,
     },
   },
-} satisfies OrganizationInput;
+} satisfies OrganizationUpdateInput;
 
 const orgResponse = {
   "organization": {
     "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
+    "document_numbering": "per_customer",
+    "document_number_prefix": "LAG",
+    "email_settings": [],
     "name": "example name",
     "created_at": "2022-09-14T16:35:31Z",
     "webhook_url": "https://example.com",
@@ -40,7 +42,6 @@ const orgResponse = {
     "timezone": "UTC",
     "billing_configuration": {
       "invoice_footer": "text",
-      "vat_rate": 25,
       "invoice_grace_period": 5,
     },
   },

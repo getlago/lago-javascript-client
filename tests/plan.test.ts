@@ -1,4 +1,4 @@
-import type { Plan, PlanInput, Plans } from "../mod.ts";
+import type { Plan, PlanCreateInput, PlansPaginated } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const planInput = {
@@ -14,7 +14,6 @@ const planInput = {
     "bill_charges_monthly": false,
     "charges": [
       {
-        "id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
         "billable_metric_id": "278da83c-c007-4fbb-afcd-b00c07c41utg",
         "charge_model": "standard",
         "properties": {
@@ -27,16 +26,10 @@ const planInput = {
             },
           ],
         },
-        "group_properties": [
-          {
-            "group_id": "123456",
-            "values": {},
-          },
-        ],
       },
     ],
   },
-} satisfies PlanInput;
+} satisfies PlanCreateInput;
 
 const planResponse = {
   "plan": {
@@ -55,6 +48,13 @@ const planResponse = {
       {
         "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
         "lago_billable_metric_id": "278da83c-c007-4fbb-afcd-b00c07c41utg",
+        "billable_metric_code": "usage",
+        "pay_in_advance": false,
+        "invoiceable": true,
+        "regroup_paid_fees": "invoice",
+        "prorated": false,
+        "min_amount_cents": 0,
+        "filters": [],
         "created_at": "2022-09-14T16:35:31Z",
         "charge_model": "standard",
         "properties": {
@@ -67,18 +67,15 @@ const planResponse = {
             },
           ],
         },
-        "group_properties": [
-          {
-            "group_id": "123456",
-            "values": {},
-          },
-        ],
       },
     ],
   },
 } satisfies Plan;
 
-const plansResponse = { plans: [planResponse.plan] } satisfies Plans;
+const plansResponse = {
+  meta: { current_page: 1, total_pages: 1, total_count: 1 },
+  plans: [planResponse.plan],
+} satisfies PlansPaginated;
 
 Deno.test("Successfully sent plan responds with 2xx", async (t) => {
   await lagoTest({

@@ -1,4 +1,4 @@
-import type { BatchEventInput, EventInput } from "../mod.ts";
+import type { EventBatchInput, EventInput } from "../mod.ts";
 import {
   lagoTest,
   notFoundErrorResponse,
@@ -8,15 +8,11 @@ import {
 const eventInput = {
   event: {
     transaction_id: "transactionId",
-    external_customer_id: "externalCustomerId",
+    external_subscription_id: "externalSubscriptionId",
     code: "code",
   },
-} as const satisfies (EventInput | BatchEventInput);
-// const batchEvent = new BatchEvent({
-//   transactionId: "transactionId",
-//   externalSubscriptionIds: ["123", "456"],
-//   code: "code",
-// });
+} as const satisfies EventInput;
+const batchInput = { events: [eventInput.event] } satisfies EventBatchInput;
 
 Deno.test("Successfully sent event responds with 2xx", async (t) => {
   await lagoTest({
@@ -47,7 +43,7 @@ Deno.test("Successfully sent batch event responds with 2xx", async (t) => {
     testType: "200",
     route: "POST@/api/v1/events/batch",
     clientPath: ["events", "createBatchEvents"],
-    inputParams: [eventInput],
+    inputParams: [batchInput],
     status: 200,
   });
 });

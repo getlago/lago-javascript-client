@@ -1,6 +1,6 @@
 import type {
   Customer,
-  CustomerInput,
+  CustomerCreateInput,
   CustomerProjectedUsage,
   CustomerUsage,
 } from "../mod.ts";
@@ -27,7 +27,6 @@ const customer = {
     "city": "City",
     "url": "https://example.com",
     "phone": "3551234567",
-    "lago_url": "https://lago.url",
     "legal_name": "name1",
     "legal_number": "10000",
     "currency": "EUR",
@@ -35,11 +34,9 @@ const customer = {
     "applicable_timezone": "UTC",
     "billing_configuration": {
       "invoice_grace_period": 3,
-      "vat_rate": 25,
       "payment_provider": "stripe",
       "provider_customer_id": "123456",
       "sync_with_provider": true,
-      "additionalProp1": {},
     },
   },
 } as const satisfies Customer;
@@ -57,21 +54,18 @@ const customerInput = {
     "city": "City",
     "url": "https://example.com",
     "phone": "3551234567",
-    "lago_url": "https://lago.url",
     "legal_name": "name1",
     "legal_number": "10000",
     "currency": "EUR",
     "timezone": "Europe/Paris",
     "billing_configuration": {
       "invoice_grace_period": 3,
-      "vat_rate": 25,
       "payment_provider": "stripe",
       "provider_customer_id": "123456",
       "sync_with_provider": true,
-      "additionalProp1": {},
     },
   },
-} as const satisfies CustomerInput;
+} as const satisfies CustomerCreateInput;
 
 const customerUsage = {
   "customer_usage": {
@@ -79,14 +73,13 @@ const customerUsage = {
     "to_datetime": "2022-09-14T00:00:00Z",
     "issuing_date": "2022-09-15T00:00:00Z",
     "amount_cents": 1200,
-    "amount_currency": "EUR",
     "total_amount_cents": 1400,
-    "total_amount_currency": "EUR",
-    "vat_amount_cents": 200,
-    "vat_amount_currency": "EUR",
+    "taxes_amount_cents": 200,
     "charges_usage": [
       {
-        "units": 3,
+        "units": "3",
+        "total_aggregated_units": "3",
+        "events_count": 3,
         "amount_cents": 1200,
         "amount_currency": "EUR",
         "charge": {
@@ -99,18 +92,10 @@ const customerUsage = {
           "code": "code",
           "aggregation_type": "count_agg",
         },
-        "groups": [
-          {
-            "lago_id": "278da83c-c007-4fbb-afcd-b00c07c41utg",
-            "key": "key",
-            "value": "value",
-            "units": 3.5,
-            "amount_cents": 1200,
-          },
-        ],
         "filters": [
           {
             "units": "1.0",
+            "total_aggregated_units": "1.0",
             "amount_cents": 600,
             "events_count": 3,
             "values": {
@@ -129,6 +114,7 @@ const customerUsage = {
         "grouped_usage": [
           {
             "units": "2.0",
+            "total_aggregated_units": "2.0",
             "amount_cents": 800,
             "events_count": 4,
             "grouped_by": {
@@ -137,6 +123,7 @@ const customerUsage = {
             "filters": [
               {
                 "units": "1.0",
+                "total_aggregated_units": "1.0",
                 "amount_cents": 400,
                 "events_count": 2,
                 "values": {

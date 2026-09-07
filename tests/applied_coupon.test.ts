@@ -1,4 +1,4 @@
-import type { AppliedCouponInput, AppliedCoupons } from "../mod.ts";
+import type { AppliedCouponInput, AppliedCouponsPaginated } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const appliedCoupon = {
@@ -8,6 +8,26 @@ const appliedCoupon = {
   },
 } as const satisfies AppliedCouponInput;
 
+const appliedCouponResponse = {
+  applied_coupon: {
+    lago_id: "b7ab2926-1de8-4428-9bcd-779314ac129b",
+    lago_coupon_id: "b7ab2926-1de8-4428-9bcd-779314ac129b",
+    coupon_code: "coupon-code",
+    coupon_name: "Coupon",
+    status: "active",
+    external_customer_id: "5eb02857-a71e-4ea2-bcf9-57d3a41bc6ba",
+    lago_customer_id: "99a6094e-199b-4101-896a-54e927ce7bd7",
+    amount_cents: 123,
+    amount_currency: "EUR",
+    frequency: "once",
+    frequency_duration: undefined,
+    percentage_rate: undefined,
+    expiration_at: "2022-04-29",
+    created_at: "2022-04-29T08:59:51Z",
+    terminated_at: "2022-04-29T08:59:51Z",
+  },
+} as const;
+
 Deno.test("Successfully sent apply coupon responds with 2xx", async (t) => {
   await lagoTest({
     t,
@@ -15,23 +35,7 @@ Deno.test("Successfully sent apply coupon responds with 2xx", async (t) => {
     route: "POST@/api/v1/applied_coupons",
     clientPath: ["appliedCoupons", "applyCoupon"],
     inputParams: [appliedCoupon],
-    responseObject: {
-      applied_coupon: {
-        lago_id: "b7ab2926-1de8-4428-9bcd-779314ac129b",
-        lago_coupon_id: "b7ab2926-1de8-4428-9bcd-779314ac129b",
-        coupon_code: "coupon-code",
-        external_customer_id: "5eb02857-a71e-4ea2-bcf9-57d3a41bc6ba",
-        lago_customer_id: "99a6094e-199b-4101-896a-54e927ce7bd7",
-        amount_cents: 123,
-        amount_currency: "EUR",
-        frequency: "once",
-        frequency_duration: undefined,
-        percentage_rate: undefined,
-        expiration_at: "2022-04-29",
-        created_at: "2022-04-29T08:59:51Z",
-        terminated_at: "2022-04-29T08:59:51Z",
-      },
-    },
+    responseObject: appliedCouponResponse,
     status: 200,
   });
 });
@@ -58,8 +62,12 @@ Deno.test(
       clientPath: ["appliedCoupons", "findAllAppliedCoupons"],
       inputParams: [],
       responseObject: {
-        applied_coupons: [appliedCoupon.applied_coupon],
-      } satisfies AppliedCoupons,
+        meta: { current_page: 1, total_pages: 1, total_count: 1 },
+        applied_coupons: [{
+          ...appliedCouponResponse.applied_coupon,
+          credits: [],
+        }],
+      } satisfies AppliedCouponsPaginated,
       status: 200,
     });
   },
@@ -78,8 +86,12 @@ Deno.test(
         page: 3,
       }],
       responseObject: {
-        applied_coupons: [appliedCoupon.applied_coupon],
-      } satisfies AppliedCoupons,
+        meta: { current_page: 1, total_pages: 1, total_count: 1 },
+        applied_coupons: [{
+          ...appliedCouponResponse.applied_coupon,
+          credits: [],
+        }],
+      } satisfies AppliedCouponsPaginated,
       status: 200,
       urlParams: { page: "3", per_page: "2" },
     });

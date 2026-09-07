@@ -1,6 +1,6 @@
 import type {
   CreditNote,
-  CreditNoteInput,
+  CreditNoteCreateInput,
   CreditNoteUpdateInput,
 } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
@@ -17,7 +17,7 @@ const creditNote = {
       },
     ],
   },
-} satisfies CreditNoteInput;
+} satisfies CreditNoteCreateInput;
 
 const creditNoteUpdate = {
   credit_note: {
@@ -29,6 +29,11 @@ const response = {
   "credit_note": {
     "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
     "sequential_id": 1234,
+    "billing_entity_code": "default",
+    "currency": "EUR",
+    "taxes_rate": 0,
+    "offset_amount_cents": 0,
+    "coupons_adjustment_amount_cents": 0,
     "number": "123456789",
     "lago_invoice_id": "144da83c-c007-4fbb-afcd-b00c07c41ffe",
     "invoice_number": "123456789",
@@ -38,17 +43,11 @@ const response = {
     "reason": "duplicated_charge",
     "description": "description",
     "total_amount_cents": 1220,
-    "total_amount_currency": "EUR",
-    "vat_amount_cents": 20,
-    "vat_amount_currency": "EUR",
-    "sub_total_vat_excluded_amount_cents": 1000,
-    "sub_total_vat_excluded_amount_currency": "EUR",
+    "taxes_amount_cents": 20,
+    "sub_total_excluding_taxes_amount_cents": 1000,
     "balance_amount_cents": 20,
-    "balance_amount_currency": "EUR",
     "credit_amount_cents": 20,
-    "credit_amount_currency": "EUR",
     "refund_amount_cents": 20,
-    "refund_amount_currency": "EUR",
     "created_at": "2022-09-14T16:35:31Z",
     "updated_at": "2022-09-14T16:35:31Z",
     "file_url": "https://example.com",
@@ -68,7 +67,6 @@ const response = {
       "city": "City",
       "url": "https://example.com",
       "phone": "3551234567",
-      "lago_url": "https://lago.url",
       "legal_name": "name1",
       "legal_number": "10000",
       "currency": "EUR",
@@ -76,11 +74,9 @@ const response = {
       "applicable_timezone": "UTC",
       "billing_configuration": {
         "invoice_grace_period": 3,
-        "vat_rate": 25,
         "payment_provider": "stripe",
         "provider_customer_id": "123456",
         "sync_with_provider": true,
-        "additionalProp1": {},
       },
     },
     "items": [
@@ -90,15 +86,25 @@ const response = {
         "amount_currency": "EUR",
         "fee": {
           "lago_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
-          "lago_group_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
+          "taxes_rate": 0,
+          "precise_unit_amount": "480",
+          "total_aggregated_units": "2.5",
+          "total_amount_cents": 1200,
+          "total_amount_currency": "EUR",
+          "pay_in_advance": false,
+          "invoiceable": true,
+          "payment_status": "succeeded",
+          "sub_total_excluding_taxes_amount_cents": 1200,
+          "sub_total_excluding_taxes_precise_amount_cents": "1200",
           "amount_cents": 1200,
           "amount_currency": "EUR",
-          "vat_amount_cents": 1200,
-          "vat_amount_currency": "EUR",
-          "units": 2.5,
+          "taxes_amount_cents": 1200,
+          "units": "2.5",
           "events_count": 5,
           "item": {
             "type": "charge",
+            "lago_item_id": "183da83c-c007-4fbb-afcd-b00c07c41ffe",
+            "item_type": "BillableMetric",
             "code": "code",
             "name": "name",
           },
@@ -163,7 +169,7 @@ Deno.test("Successfully find credit note request", async (t) => {
     route: "GET@/api/v1/credit_notes/id",
     clientPath: ["creditNotes", "findCreditNote"],
     inputParams: ["id"],
-    responseObject: creditNote,
+    responseObject: response,
     status: 200,
   });
 });
@@ -175,7 +181,10 @@ Deno.test("Successfully sent find all credit notes request", async (t) => {
     route: "GET@/api/v1/credit_notes",
     clientPath: ["creditNotes", "findAllCreditNotes"],
     inputParams: [],
-    responseObject: { credit_notes: [creditNote.credit_note] },
+    responseObject: {
+      meta: { current_page: 1, total_pages: 1, total_count: 1 },
+      credit_notes: [response.credit_note],
+    },
     status: 200,
   });
 });
@@ -187,7 +196,7 @@ Deno.test("Successfully request invoice download", async (t) => {
     route: "POST@/api/v1/credit_notes/lago_id/download",
     clientPath: ["creditNotes", "downloadCreditNote"],
     inputParams: ["lago_id"],
-    responseObject: creditNote,
+    responseObject: response,
     status: 200,
   });
 });
@@ -204,7 +213,10 @@ Deno.test(
         per_page: 2,
         page: 3,
       }],
-      responseObject: { credit_notes: [creditNote.credit_note] },
+      responseObject: {
+        meta: { current_page: 1, total_pages: 1, total_count: 1 },
+        credit_notes: [response.credit_note],
+      },
       status: 200,
       urlParams: { page: "3", per_page: "2" },
     });

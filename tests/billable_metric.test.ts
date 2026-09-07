@@ -1,4 +1,8 @@
-import type { BillableMetric, BillableMetricInput } from "../mod.ts";
+import type {
+  BillableMetric,
+  BillableMetricCreateInput,
+  BillableMetricUpdateInput,
+} from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
 const billableMetric = {
@@ -7,12 +11,10 @@ const billableMetric = {
     code: "code1",
     aggregation_type: "sum_agg",
     field_name: "field_name",
-    group: {
-      key: "country",
-      values: ["france", "italy", "spain"],
-    },
+    recurring: false,
+    filters: [{ key: "country", values: ["france", "italy", "spain"] }],
   },
-} satisfies BillableMetricInput;
+} satisfies BillableMetricCreateInput;
 
 const response = {
   billable_metric: {
@@ -23,10 +25,8 @@ const response = {
     aggregation_type: "sum_agg",
     field_name: "field_name",
     created_at: "2022-04-29T08:59:51Z",
-    group: {
-      key: "country",
-      values: ["france", "italy", "spain"],
-    },
+    recurring: false,
+    filters: [{ key: "country", values: ["france", "italy", "spain"] }],
   },
 } satisfies BillableMetric;
 
@@ -66,7 +66,7 @@ Deno.test(
         "code1",
         {
           billable_metric: { name: "new name", field_name: "new_field_name" },
-        } satisfies BillableMetricInput,
+        } satisfies BillableMetricUpdateInput,
       ],
       responseObject: response,
       status: 200,
@@ -113,7 +113,10 @@ Deno.test(
       route: "GET@/api/v1/billable_metrics",
       clientPath: ["billableMetrics", "findAllBillableMetrics"],
       inputParams: [],
-      responseObject: { billable_metrics: [response.billable_metric] },
+      responseObject: {
+        meta: { current_page: 1, total_pages: 1, total_count: 1 },
+        billable_metrics: [response.billable_metric],
+      },
       status: 200,
     });
   },
@@ -131,7 +134,10 @@ Deno.test(
         per_page: 2,
         page: 3,
       }],
-      responseObject: { billable_metrics: [response.billable_metric] },
+      responseObject: {
+        meta: { current_page: 1, total_pages: 1, total_count: 1 },
+        billable_metrics: [response.billable_metric],
+      },
       status: 200,
       urlParams: { page: "3", per_page: "2" },
     });

@@ -25,6 +25,8 @@ const response = {
     coupon_type: "fixed_amount",
     percentage_rate: undefined,
     reusable: false,
+    limited_plans: false,
+    limited_billable_metrics: false,
     created_at: "2022-04-29T08:59:51Z",
   },
 } as const satisfies Coupon;
@@ -98,7 +100,10 @@ Deno.test("Successfully sent coupon find all request responds with 2xx", async (
     route: "GET@/api/v1/coupons",
     clientPath: ["coupons", "findAllCoupons"],
     inputParams: [],
-    responseObject: { coupons: [response.coupon] },
+    responseObject: {
+      meta: { current_page: 1, total_pages: 1, total_count: 1 },
+      coupons: [response.coupon],
+    },
     status: 200,
   });
 });
@@ -112,7 +117,10 @@ Deno.test(
       route: "GET@/api/v1/coupons",
       clientPath: ["coupons", "findAllCoupons"],
       inputParams: [{ page: 3, per_page: 2 }],
-      responseObject: { coupons: [response.coupon] },
+      responseObject: {
+        meta: { current_page: 1, total_pages: 1, total_count: 1 },
+        coupons: [response.coupon],
+      },
       status: 200,
       urlParams: { page: "3", per_page: "2" },
     });

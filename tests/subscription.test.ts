@@ -1,7 +1,7 @@
 import type {
   Subscription,
   SubscriptionCreateInput,
-  Subscriptions,
+  SubscriptionsPaginated,
 } from "../mod.ts";
 import { lagoTest, unprocessableErrorResponse } from "./utils.ts";
 
@@ -34,12 +34,19 @@ const subscriptionResponse = {
     "previous_plan_code": "previous_code",
     "next_plan_code": "next_code",
     "downgrade_plan_date": "2022-09-14T16:35:31Z",
+    "ending_at": null,
+    "trial_ended_at": null,
+    "current_billing_period_started_at": null,
+    "current_billing_period_ending_at": null,
+    "on_termination_credit_note": "credit",
+    "on_termination_invoice": "generate",
   },
 } satisfies Subscription;
 
 const subscriptionsResponse = {
+  meta: { current_page: 1, total_pages: 1, total_count: 1 },
   subscriptions: [subscriptionResponse.subscription],
-} satisfies Subscriptions;
+} satisfies SubscriptionsPaginated;
 
 Deno.test("Successfully sent subscription responds with 2xx", async (t) => {
   await lagoTest({
@@ -73,7 +80,9 @@ Deno.test(
       testType: "200",
       route: "PUT@/api/v1/subscriptions/id",
       clientPath: ["subscriptions", "updateSubscription"],
-      inputParams: ["id", subscriptionInput],
+      inputParams: ["id", {
+        subscription: { name: "Updated subscription", ending_at: null },
+      }],
       responseObject: subscriptionResponse,
       status: 200,
     });
