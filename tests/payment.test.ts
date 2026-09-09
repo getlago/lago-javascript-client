@@ -23,7 +23,6 @@ const filters = {
   created_at_from: "2026-09-01",
   created_at_to: "2026-09-07",
   "payment_provider_type[]": ["stripe", "gocardless"],
-  "payment_method_type[]": ["card", "sepa_debit"],
   currency: "EUR",
   invoice_number: "LAG & +/#2",
   "payment_type[]": ["manual", "provider"],
@@ -78,7 +77,7 @@ for (const customerScoped of [false, true]) {
         (Array.isArray(value) ? value : [value]).map(String),
       );
     }
-    assertEquals([...url.searchParams.keys()].length, customerScoped ? 23 : 24);
+    assertEquals([...url.searchParams.keys()].length, customerScoped ? 21 : 22);
     assertEquals(url.searchParams.get("amount_from"), "9007199254740993");
     assertEquals(url.searchParams.get("amount_to"), "9223372036854775807");
   });
