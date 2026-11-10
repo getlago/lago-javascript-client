@@ -2,10 +2,12 @@ import { assertEquals } from "../dev_deps.ts";
 import type {
   BillingEntityCreateInput,
   CustomerCreateInput,
+  InvoiceOneOffCreateInput,
   InvoicePreviewInput,
   PaymentTermObject,
   SubscriptionCreateInput,
   SubscriptionUpdateInput,
+  WalletCreateInput,
 } from "../mod.ts";
 import { lagoTest, setupMockClient } from "./utils.ts";
 
@@ -63,6 +65,24 @@ const billingEntityWithPaymentTerm = {
     payment_term: { term_type: "net_end_of_month", days: 10 },
   },
 } as const satisfies BillingEntityCreateInput;
+
+const walletWithPaymentTerm = {
+  wallet: {
+    external_customer_id: "cus_123",
+    currency: "EUR",
+    rate_amount: "1",
+    payment_term: netTerm,
+  },
+} as const satisfies WalletCreateInput;
+
+const oneOffInvoiceWithPaymentTerm = {
+  invoice: {
+    external_customer_id: "cus_123",
+    currency: "EUR",
+    payment_term: { term_type: "due_on_receipt" },
+    fees: [{ add_on_code: "setup_fee", unit_amount_cents: 1000 }],
+  },
+} as const satisfies InvoiceOneOffCreateInput;
 
 const invoicePreviewWithPaymentTerm = {
   customer: { external_id: "cus_123" },
@@ -204,6 +224,32 @@ Deno.test("Billing entity create with payment_term sends the structured term", a
     responseObject: undefined,
     status: 200,
     expectedBody: billingEntityWithPaymentTerm,
+  });
+});
+
+Deno.test("Wallet create with payment_term sends the structured term", async (t) => {
+  await lagoTest({
+    t,
+    testType: "200",
+    route: "POST@/api/v1/wallets",
+    clientPath: ["wallets", "createWallet"],
+    inputParams: [walletWithPaymentTerm],
+    responseObject: undefined,
+    status: 200,
+    expectedBody: walletWithPaymentTerm,
+  });
+});
+
+Deno.test("One-off invoice create with payment_term sends the structured term", async (t) => {
+  await lagoTest({
+    t,
+    testType: "200",
+    route: "POST@/api/v1/invoices",
+    clientPath: ["invoices", "createInvoice"],
+    inputParams: [oneOffInvoiceWithPaymentTerm],
+    responseObject: undefined,
+    status: 200,
+    expectedBody: oneOffInvoiceWithPaymentTerm,
   });
 });
 
