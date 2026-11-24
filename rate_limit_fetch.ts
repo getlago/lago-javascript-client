@@ -88,8 +88,8 @@ export function createRateLimitFetch(
       } catch (error) {
         lastError = error;
 
-        if (!(error instanceof LagoRateLimitError)) {
-          throw error; // Not a rate limit error, rethrow immediately
+        if (!retryOnRateLimit || !(error instanceof LagoRateLimitError)) {
+          throw error; // Retries disabled or not a rate limit error
         }
 
         if (attempt === maxRetries) {

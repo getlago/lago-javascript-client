@@ -70,7 +70,10 @@ Deno.test("parseRateLimitHeaders handles invalid header values", () => {
 });
 
 Deno.test("createRateLimitFetch throws LagoRateLimitError on 429 without retry", async () => {
+  let callCount = 0;
+
   const mockFetch = createMockFetch(() => {
+    callCount++;
     return new Response("Rate limited", {
       status: 429,
       headers: {
@@ -97,6 +100,7 @@ Deno.test("createRateLimitFetch throws LagoRateLimitError on 429 without retry",
       throw error;
     }
   }
+  assertEquals(callCount, 1);
 });
 
 Deno.test("createRateLimitFetch retries on 429 with correct wait time", async () => {
